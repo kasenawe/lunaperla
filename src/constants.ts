@@ -1,20 +1,19 @@
 import { Product, FAQItem } from './types';
-import product1 from './assets/product1.png';
-import product2 from './assets/product2.png';
+import { img1, img2 } from './assets/images';
 
 export const PRODUCTS: Product[] = [
   {
     id: 'luna-classic',
     name: 'Caravanas Luna Classic',
     price: 250,
-    image: product1,
+    image: img1,
     description: 'Perlas naturales seleccionadas con montura en oro 18k.'
   },
   {
     id: 'perla-aura',
     name: 'Caravanas Perla Aura',
     price: 250,
-    image: product2,
+    image: img2,
     description: 'Diseño minimalista que resalta la pureza de la perla y el brillo del oro.'
   }
 ];
