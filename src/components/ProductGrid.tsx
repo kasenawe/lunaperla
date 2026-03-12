@@ -25,12 +25,17 @@ export default function ProductGrid({ onBuy }: ProductGridProps) {
               transition={{ duration: 0.8, delay: index * 0.2 }}
               className="group"
             >
-              <div className="relative aspect-[4/5] overflow-hidden bg-white mb-8">
+              <div className="relative aspect-[4/5] overflow-hidden bg-zinc-100 mb-8 border border-zinc-200">
                 <img
                   src={product.image}
                   alt={product.name}
-                  className="w-full h-full object-contain p-8 transition-transform duration-700 group-hover:scale-105"
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                   loading="eager"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    target.parentElement!.innerHTML += '<div class="flex items-center justify-center h-full text-zinc-400 text-xs">Imagen no disponible</div>';
+                  }}
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-500" />
               </div>
