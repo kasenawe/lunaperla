@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import Navbar from './components/Navbar';
 import Hero from './components/Hero';
-import BrandStory from './components/BrandStory';
 import ProductGrid from './components/ProductGrid';
 import TrustSection from './components/TrustSection';
 import PaymentMethods from './components/PaymentMethods';
