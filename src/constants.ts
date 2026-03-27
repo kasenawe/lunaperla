@@ -1,8 +1,8 @@
 import { Product, FAQItem } from './types';
-import canastaImg from './assets/products/canasta.PNG';
-import bolitaImg from './assets/products/bolita.PNG';
-import simpleImg from './assets/products/simple.PNG';
-import coronitaImg from './assets/products/coronita.PNG';
+import canastaImg from './assets/products/canasta.png';
+import bolitaImg from './assets/products/bolita.png';
+import simpleImg from './assets/products/simple.png';
+import coronitaImg from './assets/products/coronita.png';
 
 export const PRODUCTS: Product[] = [
   {
