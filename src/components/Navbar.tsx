@@ -16,7 +16,6 @@ export default function Navbar() {
       
       <div className="hidden md:flex gap-8 text-white text-xs uppercase tracking-widest">
         <a href="#productos" className="hover:opacity-70 transition-opacity">Colección</a>
-        <a href="#historia" className="hover:opacity-70 transition-opacity">Historia</a>
         <a href="#contacto" className="hover:opacity-70 transition-opacity">Contacto</a>
       </div>
     </motion.nav>
