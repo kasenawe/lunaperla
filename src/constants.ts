@@ -1,36 +1,31 @@
 import { Product, FAQItem } from './types';
-import canastaImg from '@/src/assets/v2-img/canasta.png';
-import bolitaImg from '@/src/assets/v2-img/bolita.png';
-import simpleImg from '@/src/assets/v2-img/simple.png';
-import coronitaImg from '@/src/assets/v2-img/coronita.png';
-
 export const PRODUCTS: Product[] = [
   {
     id: 'canasta-trenzada',
     name: 'Canasta trenzada',
     price: 250,
-    image: canastaImg,
+    image: '/assets/v2-img/canasta.png',
     description: 'Caravanas tix bebe abridores en oro amarillo 18 k y perla de cultivo 4 mm.'
   },
   {
     id: 'bolita-mediana',
     name: 'Bolita mediana',
     price: 250,
-    image: bolitaImg,
+    image: '/assets/v2-img/bolita.png',
     description: 'Caravanas tix bebe abridores en oro amarillo 18 k y bolitas 3 1/2 mm'
   },
   {
     id: 'modelo-simple',
     name: 'Modelo simple',
     price: 250,
-    image: simpleImg,
+    image: '/assets/v2-img/simple.png',
     description: 'Caravanas tix bebe abridores en oro amarillo 18 k y perla de cultivo 4 mm.'
   },
   {
     id: 'modelo-coronita',
     name: 'Modelo coronita',
     price: 250,
-    image: coronitaImg,
+    image: '/assets/v2-img/coronita.png',
     description: 'Caravanas tix bebe abridores en oro amarillo 18 k y perla de cultivo 4 mm.'
   }
 ];
