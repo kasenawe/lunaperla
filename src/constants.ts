@@ -1,20 +1,32 @@
 import { Product, FAQItem } from './types';
-import { img1, img2 } from './assets/images';
-
 export const PRODUCTS: Product[] = [
   {
-    id: 'luna-classic',
-    name: 'Caravanas Luna Classic',
+    id: 'canasta-trenzada',
+    name: 'Canasta trenzada',
     price: 250,
-    image: img1,
-    description: 'Perlas naturales seleccionadas con montura en oro 18k.'
+    image: '/assets/products/canasta.PNG',
+    description: 'Caravanas tix bebe abridores en oro amarillo 18 k y perla de cultivo 4 mm.'
   },
   {
-    id: 'perla-aura',
-    name: 'Caravanas Perla Aura',
+    id: 'bolita-mediana',
+    name: 'Bolita mediana',
     price: 250,
-    image: img2,
-    description: 'Diseño minimalista que resalta la pureza de la perla y el brillo del oro.'
+    image: '/assets/products/bolita.PNG',
+    description: 'Caravanas tix bebe abridores en oro amarillo 18 k y bolitas 3 1/2 mm'
+  },
+  {
+    id: 'modelo-simple',
+    name: 'Modelo simple',
+    price: 250,
+    image: '/assets/products/simple.PNG',
+    description: 'Caravanas tix bebe abridores en oro amarillo 18 k y perla de cultivo 4 mm.'
+  },
+  {
+    id: 'modelo-coronita',
+    name: 'Modelo coronita',
+    price: 250,
+    image: '/assets/products/coronita.PNG',
+    description: 'Caravanas tix bebe abridores en oro amarillo 18 k y perla de cultivo 4 mm.'
   }
 ];
 

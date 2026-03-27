@@ -33,17 +33,8 @@ export default function Hero() {
           transition={{ duration: 0.8, delay: 0.2 }}
           className="text-5xl md:text-7xl lg:text-8xl text-white mb-8 leading-tight"
         >
-          Elegancia que nace del mar
+          Alhajas tradicionales con estilo
         </motion.h1>
-
-        <motion.p
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="text-white/90 text-lg md:text-xl font-light mb-12 max-w-xl mx-auto"
-        >
-          Joyas atemporales creadas con perlas naturales y oro 18k para la mujer sofisticada.
-        </motion.p>
 
         <motion.button
           initial={{ opacity: 0, scale: 0.9 }}

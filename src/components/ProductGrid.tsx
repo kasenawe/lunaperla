@@ -11,7 +11,7 @@ export default function ProductGrid({ onBuy }: ProductGridProps) {
     <section id="productos" className="py-24 px-4 bg-zinc-50">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-4xl mb-4">Colección Esencial</h2>
+          <h2 className="text-4xl mb-4">Colección Bebé</h2>
           <p className="text-zinc-500 uppercase tracking-widest text-xs">Uruguay Exclusive</p>
         </div>
 

@@ -23,9 +23,6 @@ export default function App() {
       {/* Hero Section */}
       <Hero />
 
-      {/* Brand Story */}
-      <BrandStory />
-
       {/* Products Section */}
       <ProductGrid onBuy={handleBuy} />
 
