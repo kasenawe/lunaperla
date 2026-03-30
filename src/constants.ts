@@ -1,5 +1,10 @@
 import { Product, FAQItem } from './types';
 
+// Logo completo (con texto) para el hero
+export const LOGO_URL = new URL('./assets/images/luna-gold-logo-trim.png', import.meta.url).href;
+// Logo simple (sin texto inferior) para navbar y footer
+export const LOGO_SIMPLE_URL = new URL('./assets/images/luna-gold-logo-simple.png', import.meta.url).href;
+
 const canastaImage = new URL('./assets/images/canasta.PNG', import.meta.url).href;
 const bolitaImage = new URL('./assets/images/bolita.PNG', import.meta.url).href;
 const simpleImage = new URL('./assets/images/simple.PNG', import.meta.url).href;

@@ -3,7 +3,7 @@ import { WHATSAPP_NUMBER } from '../constants';
 
 export default function WhatsAppButton() {
   const handleClick = () => {
-    const message = encodeURIComponent('Hola Luna Perla, me gustaría recibir más información sobre sus joyas.');
+    const message = encodeURIComponent('Hola Luna Gold, me gustaría recibir más información sobre sus joyas.');
     window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, '_blank');
   };
 

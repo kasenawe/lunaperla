@@ -1,4 +1,5 @@
 import { motion } from 'motion/react';
+import { LOGO_URL } from '../constants';
 
 export default function Hero() {
   const scrollToProducts = () => {
@@ -10,7 +11,7 @@ export default function Hero() {
       <div className="absolute inset-0 z-0 bg-zinc-900">
         <img
           src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?auto=format&fit=crop&q=80&w=2000"
-          alt="Luna Perla Hero"
+          alt="Luna Gold — joyería"
           className="w-full h-full object-cover opacity-60"
           referrerPolicy="no-referrer"
         />
@@ -18,14 +19,18 @@ export default function Hero() {
       </div>
 
       <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
-        <motion.span
+        <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="block text-sm uppercase tracking-[0.3em] text-white mb-6"
+          className="mb-8 flex justify-center"
         >
-          Luna Perla
-        </motion.span>
+          <img
+            src={LOGO_URL}
+            alt="Luna Gold Creaciones"
+            className="mx-auto h-36 w-auto max-w-[min(90vw,520px)] object-contain md:h-56 drop-shadow-[0_10px_26px_rgba(0,0,0,0.45)]"
+          />
+        </motion.div>
         
         <motion.h1
           initial={{ opacity: 0, y: 20 }}

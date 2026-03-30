@@ -35,7 +35,7 @@ export default function PurchaseModal({ product, onClose }: PurchaseModalProps) 
     e.preventDefault();
     const methodText = method === 'transfer' ? 'Transferencia Bancaria' : 'Efectivo contra entrega';
     const message = encodeURIComponent(
-      `*Nuevo Pedido - Luna Perla*\n\n` +
+      `*Nuevo Pedido - Luna Gold*\n\n` +
       `*Producto:* ${product.name}\n` +
       `*Precio:* USD ${product.price}\n` +
       `*Método de Pago:* ${methodText}\n\n` +
