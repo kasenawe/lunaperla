@@ -76,4 +76,4 @@ export const FAQS: FAQItem[] = [
   },
 ];
 
-export const WHATSAPP_NUMBER = "59899000000"; // Número de ejemplo para Uruguay
+export const WHATSAPP_NUMBER = "59892550000"; // Número de ejemplo para Uruguay
