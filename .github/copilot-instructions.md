@@ -11,6 +11,7 @@ Luna Gold Creaciones is a luxury jewelry e-commerce website for baby earrings (a
 - **Layout Components** (`Navbar`, `Hero`, `Footer`): Handle page structure and navigation
 - **Product Components** (`ProductGrid`, `PurchaseModal`): Product display and purchasing flow
 - **Feature Sections** (`TrustSection`, `PaymentMethods`, `FAQ`, `BrandStory`): Marketing and information sections
+- **Page Components** (`Home`, `Success`, `Failure`, `Pending`): Route-based pages for Mercado Pago results
 - **Utility Components** (`WhatsAppButton`): Floating action button for customer support
 
 ### State Management
@@ -37,9 +38,26 @@ npm run lint             # TypeScript type checking
 npm run clean            # Remove dist/ folder
 ```
 
+### Backend Development
+
+```bash
+cd ../lunaperla-backend
+npm install              # Install backend dependencies
+npm run dev              # Start Express server on port 3001 with nodemon
+```
+
+### Routing
+
+- Uses `react-router-dom` for client-side routing
+- Routes: `/` (Home), `/success`, `/failure`, `/pending` (Mercado Pago redirects)
+- All routes include Navbar, Footer, and WhatsApp button for consistency
+
+### Important Notes
+
 ### Important Notes
 
 - Set `GEMINI_API_KEY` in `.env.local` (referenced in `vite.config.ts` via `process.env.GEMINI_API_KEY`)
+- Set `MERCADO_PAGO_ACCESS_TOKEN` in `backend/.env` (get from Mercado Pago Developers)
 - HMR is disabled in AI Studio via `DISABLE_HMR` env var—file watching is intentionally disabled to prevent flickering during agent edits
 - Assets use dynamic imports via Vite's `import.meta.url` for proper path resolution
 
@@ -62,17 +80,28 @@ npm run clean            # Remove dist/ folder
 
 ### Purchase Flow
 
+### Purchase Flow
+
 1. User clicks "Comprar" → `onBuy()` passes product to parent
 2. Modal appears with payment method options (Mercado Pago, Transfer, Cash)
-3. Mercado Pago: Redirects to `https://www.mercadopago.com.uy`
-4. Other methods: Show form (name, phone, address) → Send to WhatsApp via `wa.me/` URL with encoded message
-5. **Never store payment data**—all orders go through WhatsApp or Mercado Pago
+3. Mercado Pago: Frontend calls `POST /api/create-payment` → redirects to Mercado Pago checkout
+4. After payment: Mercado Pago redirects to `/success`, `/failure`, or `/pending` routes
+5. Other methods: Show form (name, phone, address) → Send to WhatsApp via `wa.me/` URL with encoded message
+6. **Never store payment data**—all orders go through WhatsApp or Mercado Pago
 
 ### WhatsApp Integration
 
 - Floating button in `WhatsAppButton` component
 - Use `WHATSAPP_NUMBER` constant (`59899000000` for example)
 - Message format: `*Bold text*` markdown, newlines `\n`, use `encodeURIComponent()` for URL-safe messages
+
+### Mercado Pago Integration
+
+- Backend endpoint: `POST /api/create-payment` creates payment preference
+- Frontend calls backend API, then redirects to Mercado Pago checkout URL
+- Webhook endpoint: `POST /api/webhook` handles payment confirmations
+- SDK: `mercadopago@2.12.0` with new client API (`MercadoPagoConfig`, `Preference`)
+- Access token stored securely in `backend/.env`
 
 ## Build & Deployment
 

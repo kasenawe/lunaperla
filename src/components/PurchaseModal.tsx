@@ -22,9 +22,31 @@ export default function PurchaseModal({ product, onClose }: PurchaseModalProps) 
 
   const handleMethodSelect = (selectedMethod: PaymentMethod) => {
     if (selectedMethod === 'mercadopago') {
-      // En un caso real, aquí redirigiríamos a la preferencia de Mercado Pago
-      window.open('https://www.mercadopago.com.uy', '_blank');
-      onClose();
+      // Crear preferencia de pago en el backend
+      fetch('http://localhost:3001/api/create-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          product: product,
+          customerData: {} // Por ahora vacío, se puede agregar después
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.init_point) {
+          // Redirigir a Mercado Pago
+          window.location.href = data.init_point;
+        } else {
+          console.error('Error creando pago:', data);
+          alert('Error al procesar el pago. Intente nuevamente.');
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        alert('Error de conexión. Intente nuevamente.');
+      });
     } else {
       setMethod(selectedMethod);
       setStep('form');
