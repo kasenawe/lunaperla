@@ -18,62 +18,87 @@ export default function PurchaseModal({
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
+    email: "",
     address: "",
   });
 
   if (!product) return null;
 
   const handleMethodSelect = (selectedMethod: PaymentMethod) => {
-    if (selectedMethod === "mercadopago") {
-      // Crear preferencia de pago en el backend
-      fetch(BACKEND_URL + "/api/create-payment", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          product: product,
-          customerData: {}, // Por ahora vacío, se puede agregar después
-        }),
-      })
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.init_point) {
-            // Redirigir a Mercado Pago
-            window.location.href = data.init_point;
-          } else {
-            console.error("Error creando pago:", data);
-            alert("Error al procesar el pago. Intente nuevamente.");
-          }
-        })
-        .catch((error) => {
-          console.error("Error:", error);
-          alert("Error de conexión. Intente nuevamente.");
-        });
-    } else {
-      setMethod(selectedMethod);
-      setStep("form");
-    }
+    setMethod(selectedMethod);
+    setStep("form"); // Siempre ir al formulario primero para recopilar datos
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const methodText =
-      method === "transfer"
-        ? "Transferencia Bancaria"
-        : "Efectivo contra entrega";
-    const message = encodeURIComponent(
-      `*Nuevo Pedido - Luna Gold*\n\n` +
-        `*Producto:* ${product.name}\n` +
-        `*Precio:* USD ${product.price}\n` +
-        `*Método de Pago:* ${methodText}\n\n` +
-        `*Datos del Cliente:*\n` +
-        `- Nombre: ${formData.name}\n` +
-        `- Teléfono: ${formData.phone}\n` +
-        `- Dirección: ${formData.address}`,
-    );
-    window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, "_blank");
-    onClose();
+
+    if (!formData.name || !formData.phone) {
+      alert("Por favor complete nombre y teléfono");
+      return;
+    }
+
+    if (method === "mercadopago" && !formData.email) {
+      alert("Por favor complete su email para el pago con Mercado Pago");
+      return;
+    }
+
+    if (method !== "mercadopago" && !formData.address) {
+      alert("Por favor complete la dirección de envío");
+      return;
+    }
+
+    if (method === "mercadopago") {
+      // Procesar pago con Mercado Pago
+      try {
+        const response = await fetch(BACKEND_URL + "/api/create-payment", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            product: product,
+            customerData: {
+              name: formData.name,
+              phone: formData.phone,
+              email: formData.email,
+            },
+          }),
+        });
+
+        const data = await response.json();
+
+        if (data.init_point) {
+          // Redirigir a Mercado Pago
+          window.location.href = data.init_point;
+        } else {
+          console.error("Error creando pago:", data);
+          alert("Error al procesar el pago. Intente nuevamente.");
+        }
+      } catch (error) {
+        console.error("Error:", error);
+        alert("Error de conexión. Intente nuevamente.");
+      }
+    } else {
+      // Procesar otros métodos (WhatsApp)
+      const methodText =
+        method === "transfer"
+          ? "Transferencia Bancaria"
+          : "Efectivo contra entrega";
+
+      const message = encodeURIComponent(
+        `*Nuevo Pedido - Luna Gold*\n\n` +
+          `*Producto:* ${product.name}\n` +
+          `*Precio:* USD ${product.price}\n` +
+          `*Método de Pago:* ${methodText}\n\n` +
+          `*Datos del Cliente:*\n` +
+          `- Nombre: ${formData.name}\n` +
+          `- Teléfono: ${formData.phone}\n` +
+          `- Dirección: ${formData.address}`,
+      );
+
+      window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${message}`, "_blank");
+      onClose();
+    }
   };
 
   return (
@@ -169,9 +194,15 @@ export default function PurchaseModal({
                   >
                     ← Volver a opciones
                   </button>
-                  <h2 className="text-3xl">Datos de Envío</h2>
+                  <h2 className="text-3xl">
+                    {method === "mercadopago"
+                      ? "Datos de Pago"
+                      : "Datos de Envío"}
+                  </h2>
                   <p className="text-sm text-zinc-500 mt-2">
-                    Completa tus datos para coordinar el pedido por WhatsApp.
+                    {method === "mercadopago"
+                      ? "Completa tus datos para procesar el pago con Mercado Pago."
+                      : "Completa tus datos para coordinar el pedido por WhatsApp."}
                   </p>
                 </div>
 
@@ -206,28 +237,49 @@ export default function PurchaseModal({
                       placeholder="Ej: 099 123 456"
                     />
                   </div>
-                  <div>
-                    <label className="block text-xs uppercase tracking-widest text-zinc-500 mb-2">
-                      Dirección de Envío
-                    </label>
-                    <input
-                      required
-                      type="text"
-                      value={formData.address}
-                      onChange={(e) =>
-                        setFormData({ ...formData, address: e.target.value })
-                      }
-                      className="w-full border-b border-zinc-200 py-3 focus:border-black outline-none transition-colors font-light"
-                      placeholder="Calle, Número, Apto / Ciudad"
-                    />
-                  </div>
+                  {method === "mercadopago" && (
+                    <div>
+                      <label className="block text-xs uppercase tracking-widest text-zinc-500 mb-2">
+                        Email
+                      </label>
+                      <input
+                        required
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) =>
+                          setFormData({ ...formData, email: e.target.value })
+                        }
+                        className="w-full border-b border-zinc-200 py-3 focus:border-black outline-none transition-colors font-light"
+                        placeholder="Ej: maria@email.com"
+                      />
+                    </div>
+                  )}
+                  {method !== "mercadopago" && (
+                    <div>
+                      <label className="block text-xs uppercase tracking-widest text-zinc-500 mb-2">
+                        Dirección de Envío
+                      </label>
+                      <input
+                        required
+                        type="text"
+                        value={formData.address}
+                        onChange={(e) =>
+                          setFormData({ ...formData, address: e.target.value })
+                        }
+                        className="w-full border-b border-zinc-200 py-3 focus:border-black outline-none transition-colors font-light"
+                        placeholder="Calle, Número, Apto / Ciudad"
+                      />
+                    </div>
+                  )}
                 </div>
 
                 <button
                   type="submit"
                   className="w-full bg-black text-white py-5 text-sm uppercase tracking-widest hover:bg-zinc-800 transition-colors mt-8"
                 >
-                  Enviar pedido por WhatsApp
+                  {method === "mercadopago"
+                    ? "Pagar con Mercado Pago"
+                    : "Enviar pedido por WhatsApp"}
                 </button>
               </form>
             )}
