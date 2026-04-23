@@ -18,6 +18,12 @@ export default defineConfig(({ mode }) => {
     server: {
       host: "0.0.0.0",
       port: 3000,
+      proxy: {
+        "/api": {
+          target: "http://localhost:3001",
+          changeOrigin: true,
+        },
+      },
       // Configure HMR for development across devices
       // - DISABLE_HMR=true: Disables HMR (required in AI Studio)
       // - VITE_HMR_HOST: Specify your machine's IP for mobile access (e.g., 192.168.x.x)

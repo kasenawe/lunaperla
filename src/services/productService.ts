@@ -1,12 +1,8 @@
 import { Product } from "../types";
-import { BACKEND_URL, BACKEND_URL_LOCAL, PRODUCTS } from "../constants";
+import { BACKEND_URL, PRODUCTS } from "../constants";
 import { normalizeImageUrl } from "../utils/imageUrl";
 
-// Automatically detect backend URL based on environment
-const getBackendUrl = () => {
-  // In development: use localhost, in production: use Vercel URL
-  return import.meta.env.DEV ? BACKEND_URL_LOCAL : BACKEND_URL;
-};
+const API_BASE_URL = import.meta.env.DEV ? "" : BACKEND_URL;
 
 type ProductApiItem = {
   id?: string;
@@ -19,7 +15,7 @@ type ProductApiItem = {
 
 export async function getProducts(): Promise<Product[]> {
   try {
-    const response = await fetch(`${getBackendUrl()}/api/products`);
+    const response = await fetch(`${API_BASE_URL}/api/products`);
     if (!response.ok) {
       throw new Error(`HTTP error: ${response.status}`);
     }
@@ -45,6 +41,6 @@ export async function getProducts(): Promise<Product[]> {
     return mappedProducts.length > 0 ? mappedProducts : PRODUCTS;
   } catch {
     // Fallback to static products
-    //return PRODUCTS;
+    return PRODUCTS;
   }
 }

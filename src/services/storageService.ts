@@ -1,15 +1,11 @@
-import { BACKEND_URL, BACKEND_URL_LOCAL } from "../constants";
+import { BACKEND_URL } from "../constants";
 
 type UploadImageResponse = {
   image_url?: string;
   error?: string;
 };
 
-// Automatically detect backend URL based on environment
-const getBackendUrl = () => {
-  // In development: use localhost, in production: use Vercel URL
-  return import.meta.env.DEV ? BACKEND_URL_LOCAL : BACKEND_URL;
-};
+const API_BASE_URL = import.meta.env.DEV ? "" : BACKEND_URL;
 
 export async function uploadProductImage(file: File): Promise<string> {
   if (!file.type.startsWith("image/")) {
@@ -24,7 +20,7 @@ export async function uploadProductImage(file: File): Promise<string> {
   const formData = new FormData();
   formData.append("image", file);
 
-  const response = await fetch(`${getBackendUrl()}/api/upload-image`, {
+  const response = await fetch(`${API_BASE_URL}/api/upload-image`, {
     method: "POST",
     body: formData,
   });

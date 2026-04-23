@@ -77,5 +77,4 @@ export const FAQS: FAQItem[] = [
 ];
 
 export const WHATSAPP_NUMBER = "59892550000"; // Número de ejemplo para Uruguay
-export const BACKEND_URL = "https://lunaperla-backend.vercel.app"; // Número de ejemplo para Uruguay
-export const BACKEND_URL_LOCAL = "http://localhost:3001"; // Número de ejemplo para Uruguay
+export const BACKEND_URL = "https://lunaperla-backend.vercel.app";

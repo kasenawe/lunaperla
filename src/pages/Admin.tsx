@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { BACKEND_URL_LOCAL } from "../constants";
+import { BACKEND_URL } from "../constants";
 import { BackendProduct } from "../types";
 import { ProductForm } from "../components/ProductForm";
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import WhatsAppButton from "../components/WhatsAppButton";
 import { normalizeImageUrl } from "../utils/imageUrl";
+
+const API_BASE_URL = import.meta.env.DEV ? "" : BACKEND_URL;
 
 export const Admin: React.FC = () => {
   const [products, setProducts] = useState<BackendProduct[]>([]);
@@ -35,9 +37,7 @@ export const Admin: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await fetch(
-        `${BACKEND_URL_LOCAL}/api/products?all=true`,
-      );
+      const response = await fetch(`${API_BASE_URL}/api/products?all=true`);
       if (!response.ok) {
         throw new Error("Error al cargar productos");
       }
@@ -54,7 +54,7 @@ export const Admin: React.FC = () => {
 
   const handleCreateProduct = async (data: Omit<BackendProduct, "id">) => {
     try {
-      const response = await fetch(`${BACKEND_URL_LOCAL}/api/products`, {
+      const response = await fetch(`${API_BASE_URL}/api/products`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -81,7 +81,7 @@ export const Admin: React.FC = () => {
 
     try {
       const response = await fetch(
-        `${BACKEND_URL_LOCAL}/api/products/${editingProduct.id}`,
+        `${API_BASE_URL}/api/products/${editingProduct.id}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
@@ -112,7 +112,7 @@ export const Admin: React.FC = () => {
     }
 
     try {
-      const response = await fetch(`${BACKEND_URL_LOCAL}/api/products/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
         method: "DELETE",
       });
 
