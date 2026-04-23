@@ -1,22 +1,24 @@
-import { motion } from 'motion/react';
-import { PRODUCTS } from '../constants';
-import { Product } from '../types';
+import { motion } from "motion/react";
+import { Product } from "../types";
 
 interface ProductGridProps {
+  products: Product[];
   onBuy: (product: Product) => void;
 }
 
-export default function ProductGrid({ onBuy }: ProductGridProps) {
+export default function ProductGrid({ products, onBuy }: ProductGridProps) {
   return (
     <section id="productos" className="py-24 px-4 bg-zinc-50">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl mb-4">Colección Bebé</h2>
-          <p className="text-zinc-500 uppercase tracking-widest text-xs">Uruguay Exclusive</p>
+          <p className="text-zinc-500 uppercase tracking-widest text-xs">
+            Uruguay Exclusive
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24">
-          {PRODUCTS.map((product, index) => (
+          {products.map((product, index) => (
             <motion.div
               key={product.id}
               initial={{ opacity: 0, y: 30 }}
@@ -35,12 +37,14 @@ export default function ProductGrid({ onBuy }: ProductGridProps) {
                 />
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors duration-500" />
               </div>
-              
+
               <div className="text-center">
                 <h3 className="text-2xl mb-2">{product.name}</h3>
-                <p className="text-zinc-500 font-light mb-4">{product.description}</p>
+                <p className="text-zinc-500 font-light mb-4">
+                  {product.description}
+                </p>
                 <p className="text-xl mb-6 font-medium">USD {product.price}</p>
-                
+
                 <button
                   onClick={() => onBuy(product)}
                   className="inline-block border border-black px-12 py-3 text-sm uppercase tracking-widest hover:bg-black hover:text-white transition-all duration-300"

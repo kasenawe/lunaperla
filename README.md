@@ -12,6 +12,9 @@ E-commerce de joyeria infantil para Uruguay, construido con React + TypeScript +
 - Flujo de compra con modal y formulario de datos del cliente.
 - Integracion de Mercado Pago via backend (creacion de preferencia y redireccion al checkout).
 - Integracion de WhatsApp para consultas y pedidos con transferencia/efectivo.
+- Productos dinámicos desde backend (base de datos Supabase).
+- Imágenes en Supabase Storage con URLs públicas normalizadas.
+- Fallback a productos estáticos en caso de error de conexión.
 
 ## Stack
 
@@ -24,11 +27,17 @@ E-commerce de joyeria infantil para Uruguay, construido con React + TypeScript +
 
 ## Funcionalidades
 
-### Catalogo y experiencia de compra
+### Catálogo y experiencia de compra
 
-- Catalogo de productos desde [src/constants.ts](src/constants.ts).
+- Productos dinámicos desde endpoint backend `/api/products` (Supabase PostgreSQL).
+- Servicio de productos en [src/services/productService.ts](src/services/productService.ts) con:
+  - Fetch desde backend con manejo de errores.
+  - Normalización de URLs de imágenes desde Supabase Storage.
+  - Fallback automático a productos estáticos si falla el API.
 - Grilla de productos con animaciones en [src/components/ProductGrid.tsx](src/components/ProductGrid.tsx).
+- Estados de carga y error en [src/pages/Home.tsx](src/pages/Home.tsx).
 - Modal de compra multi-paso en [src/components/PurchaseModal.tsx](src/components/PurchaseModal.tsx).
+- Imágenes almacenadas en Supabase Storage (bucket público `products`).
 
 ### Metodos de pago
 
@@ -51,9 +60,11 @@ Implementadas en [src/App.tsx](src/App.tsx) y paginas en [src/pages](src/pages).
 
 ## Arquitectura (Frontend)
 
-- [src/pages/Home.tsx](src/pages/Home.tsx): compone la pagina principal y controla `selectedProduct`.
-- [src/components/PurchaseModal.tsx](src/components/PurchaseModal.tsx): concentra la logica de checkout.
-- [src/constants.ts](src/constants.ts): productos, FAQ, logos, WhatsApp y URLs de backend.
+- [src/pages/Home.tsx](src/pages/Home.tsx): compone la página principal, controla `selectedProduct` y estado de carga de productos.
+- [src/services/productService.ts](src/services/productService.ts): servicio de fetch de productos con normalización de URLs y fallback.
+- [src/components/ProductGrid.tsx](src/components/ProductGrid.tsx): recibe productos como props, renderiza grilla con animaciones.
+- [src/components/PurchaseModal.tsx](src/components/PurchaseModal.tsx): concentra la lógica de checkout.
+- [src/constants.ts](src/constants.ts): productos (fallback), FAQ, logos, WhatsApp y URLs de backend.
 - [src/types.ts](src/types.ts): tipos compartidos (`Product`, `FAQItem`, `PaymentMethod`).
 
 ## Estructura del Proyecto
@@ -63,11 +74,14 @@ lunaperla/
    src/
       components/
       pages/
+      services/
+         productService.ts
       App.tsx
       constants.ts
       types.ts
    .github/
    package.json
+   .env.example
 ```
 
 ## Requisitos
@@ -81,9 +95,10 @@ lunaperla/
 En este frontend:
 
 - `.env.local`
-  - `GEMINI_API_KEY` (si usas la integracion de AI Studio/Gemini)
+  - `GEMINI_API_KEY` (si usas la integración de AI Studio/Gemini)
+  - `VITE_SUPABASE_STORAGE_PUBLIC_BASE_URL`: URL pública del bucket de productos en Supabase Storage (ejemplo: `https://PROJECT_REF.supabase.co/storage/v1/object/public/products`)
 
-Nota: la URL de backend usada para pagos esta definida actualmente en [src/constants.ts](src/constants.ts) como `BACKEND_URL_LOCAL`.
+Nota: la URL de backend para pagos está definida en [src/constants.ts](src/constants.ts) como `BACKEND_URL` (producción) y `BACKEND_URL_LOCAL` (desarrollo).
 
 ## Scripts
 
@@ -113,9 +128,11 @@ Este frontend espera un backend Node/Express en una carpeta hermana (`../lunaper
 - `POST /api/webhook`
 - `GET /api/health`
 
-## Contenido Editable Rapido
+## Contenido Editable Rápido
 
-- Productos: [src/constants.ts](src/constants.ts)
-- FAQs: [src/constants.ts](src/constants.ts)
-- Numero de WhatsApp: [src/constants.ts](src/constants.ts)
-- Textos de estados de pago: [src/pages/Success.tsx](src/pages/Success.tsx), [src/pages/Failure.tsx](src/pages/Failure.tsx), [src/pages/Pending.tsx](src/pages/Pending.tsx)
+- **Productos**: tabla `products` en Supabase (ver instrucciones en backend).
+- **Productos (fallback local)**: [src/constants.ts](src/constants.ts) para cuando falla el API.
+- **FAQs**: [src/constants.ts](src/constants.ts)
+- **Número de WhatsApp**: [src/constants.ts](src/constants.ts)
+- **Imágenes de productos**: bucket `products` en Supabase Storage.
+- **Textos de estados de pago**: [src/pages/Success.tsx](src/pages/Success.tsx), [src/pages/Failure.tsx](src/pages/Failure.tsx), [src/pages/Pending.tsx](src/pages/Pending.tsx)
