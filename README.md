@@ -9,11 +9,13 @@ E-commerce de joyeria infantil para Uruguay, construido con React + TypeScript +
 ## Estado Actual
 
 - Frontend con rutas completas para checkout: inicio, pago exitoso, pago fallido y pago pendiente.
+- Panel administrativo en `/admin` para gestionar productos.
 - Flujo de compra con modal y formulario de datos del cliente.
 - Integracion de Mercado Pago via backend (creacion de preferencia y redireccion al checkout).
 - Integracion de WhatsApp para consultas y pedidos con transferencia/efectivo.
 - Productos dinámicos desde backend (base de datos Supabase).
-- Imágenes en Supabase Storage con URLs públicas normalizadas.
+- Imágenes en Supabase Storage con rutas persistidas en la base y URLs públicas normalizadas en frontend.
+- Subida de imágenes desde el panel admin a través del backend.
 - Fallback a productos estáticos en caso de error de conexión.
 
 ## Stack
@@ -39,6 +41,20 @@ E-commerce de joyeria infantil para Uruguay, construido con React + TypeScript +
 - Modal de compra multi-paso en [src/components/PurchaseModal.tsx](src/components/PurchaseModal.tsx).
 - Imágenes almacenadas en Supabase Storage (bucket público `products`).
 
+### Panel admin de productos
+
+- Ruta dedicada: `/admin` en [src/App.tsx](src/App.tsx).
+- Página de administración en [src/pages/Admin.tsx](src/pages/Admin.tsx).
+- CRUD completo de productos:
+  - listado con `GET /api/products?all=true`
+  - creación con `POST /api/products`
+  - edición con `PUT /api/products/:id`
+  - eliminación con `DELETE /api/products/:id`
+- Formulario reutilizable en [src/components/ProductForm.tsx](src/components/ProductForm.tsx).
+- Subida de imágenes vía backend usando [src/services/storageService.ts](src/services/storageService.ts).
+- Vista previa de imágenes y normalización compartida con [src/utils/imageUrl.ts](src/utils/imageUrl.ts).
+- Footer reutilizable en [src/components/Footer.tsx](src/components/Footer.tsx).
+
 ### Metodos de pago
 
 - Mercado Pago:
@@ -52,6 +68,7 @@ E-commerce de joyeria infantil para Uruguay, construido con React + TypeScript +
 ### Rutas de la app
 
 - `/` Home: landing, catalogo, FAQ y modal de compra.
+- `/admin` panel de administración de productos.
 - `/success` confirmacion de pago exitoso.
 - `/failure` pantalla de pago fallido con acceso a soporte.
 - `/pending` pantalla de pago pendiente con seguimiento.
@@ -61,11 +78,16 @@ Implementadas en [src/App.tsx](src/App.tsx) y paginas en [src/pages](src/pages).
 ## Arquitectura (Frontend)
 
 - [src/pages/Home.tsx](src/pages/Home.tsx): compone la página principal, controla `selectedProduct` y estado de carga de productos.
+- [src/pages/Admin.tsx](src/pages/Admin.tsx): panel de administración con listado, mensajes, edición, creación y borrado de productos.
 - [src/services/productService.ts](src/services/productService.ts): servicio de fetch de productos con normalización de URLs y fallback.
+- [src/services/storageService.ts](src/services/storageService.ts): subida de imágenes al backend usando `multipart/form-data`.
+- [src/utils/imageUrl.ts](src/utils/imageUrl.ts): helper compartido para convertir paths almacenados en URLs públicas renderizables.
 - [src/components/ProductGrid.tsx](src/components/ProductGrid.tsx): recibe productos como props, renderiza grilla con animaciones.
+- [src/components/ProductForm.tsx](src/components/ProductForm.tsx): formulario reutilizable para el CRUD del admin.
 - [src/components/PurchaseModal.tsx](src/components/PurchaseModal.tsx): concentra la lógica de checkout.
+- [src/components/Footer.tsx](src/components/Footer.tsx): footer reutilizable para páginas internas.
 - [src/constants.ts](src/constants.ts): productos (fallback), FAQ, logos, WhatsApp y URLs de backend.
-- [src/types.ts](src/types.ts): tipos compartidos (`Product`, `FAQItem`, `PaymentMethod`).
+- [src/types.ts](src/types.ts): tipos compartidos (`Product`, `BackendProduct`, `FAQItem`, `PaymentMethod`).
 
 ## Estructura del Proyecto
 
@@ -98,6 +120,11 @@ En este frontend:
   - `GEMINI_API_KEY` (si usas la integración de AI Studio/Gemini)
   - `VITE_SUPABASE_STORAGE_PUBLIC_BASE_URL`: URL pública del bucket de productos en Supabase Storage (ejemplo: `https://PROJECT_REF.supabase.co/storage/v1/object/public/products`)
 
+Notas:
+
+- El frontend ya no sube imágenes directamente a Supabase; esa operación se hace en backend con service role.
+- `image_url` se guarda en base como path del objeto en Storage, no como URL pública completa.
+
 Nota: la URL de backend para pagos está definida en [src/constants.ts](src/constants.ts) como `BACKEND_URL` (producción) y `BACKEND_URL_LOCAL` (desarrollo).
 
 ## Scripts
@@ -124,6 +151,12 @@ Desde este proyecto:
 
 Este frontend espera un backend Node/Express en una carpeta hermana (`../lunaperla-backend`) con al menos:
 
+- `GET /api/products`
+- `GET /api/products?all=true`
+- `POST /api/products`
+- `PUT /api/products/:id`
+- `DELETE /api/products/:id`
+- `POST /api/upload-image`
 - `POST /api/create-payment`
 - `POST /api/webhook`
 - `GET /api/health`
@@ -134,5 +167,5 @@ Este frontend espera un backend Node/Express en una carpeta hermana (`../lunaper
 - **Productos (fallback local)**: [src/constants.ts](src/constants.ts) para cuando falla el API.
 - **FAQs**: [src/constants.ts](src/constants.ts)
 - **Número de WhatsApp**: [src/constants.ts](src/constants.ts)
-- **Imágenes de productos**: bucket `products` en Supabase Storage.
+- **Imágenes de productos**: bucket `products` en Supabase Storage; el frontend renderiza desde el path guardado en `image_url`.
 - **Textos de estados de pago**: [src/pages/Success.tsx](src/pages/Success.tsx), [src/pages/Failure.tsx](src/pages/Failure.tsx), [src/pages/Pending.tsx](src/pages/Pending.tsx)

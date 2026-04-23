@@ -1,8 +1,6 @@
 import { Product } from "../types";
 import { BACKEND_URL_LOCAL, PRODUCTS } from "../constants";
-
-const SUPABASE_STORAGE_BASE_URL =
-  import.meta.env.VITE_SUPABASE_STORAGE_PUBLIC_BASE_URL?.trim() ?? "";
+import { normalizeImageUrl } from "../utils/imageUrl";
 
 type ProductApiItem = {
   id?: string;
@@ -12,24 +10,6 @@ type ProductApiItem = {
   image?: string;
   image_url?: string;
 };
-
-function normalizeImageUrl(imageValue?: string): string {
-  if (!imageValue) {
-    return "";
-  }
-
-  if (/^https?:\/\//i.test(imageValue)) {
-    return imageValue;
-  }
-
-  if (!SUPABASE_STORAGE_BASE_URL) {
-    return imageValue;
-  }
-
-  const normalizedBase = SUPABASE_STORAGE_BASE_URL.replace(/\/$/, "");
-  const normalizedPath = imageValue.replace(/^\//, "");
-  return `${normalizedBase}/${normalizedPath}`;
-}
 
 export async function getProducts(): Promise<Product[]> {
   try {
