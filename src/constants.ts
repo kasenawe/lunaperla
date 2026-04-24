@@ -1,4 +1,4 @@
-import { Product, FAQItem } from "./types";
+import { Product, FAQItem, Category } from "./types";
 
 // Logo completo (con texto) para el hero
 export const LOGO_URL = new URL(
@@ -18,6 +18,46 @@ const simpleImage = new URL("./assets/images/simple.PNG", import.meta.url).href;
 const coronitaImage = new URL("./assets/images/coronita.PNG", import.meta.url)
   .href;
 
+export const DEFAULT_CATEGORIES: Category[] = [
+  {
+    slug: "bebe",
+    name: "Coleccion Bebe",
+    description:
+      "Caravanas y joyas delicadas para regalar en los primeros momentos.",
+    active: true,
+    sortOrder: 0,
+  },
+  {
+    slug: "alianzas",
+    name: "Alianzas",
+    description:
+      "Piezas para compromiso, boda y celebraciones con valor simbolico.",
+    active: true,
+    sortOrder: 1,
+  },
+  {
+    slug: "anillos",
+    name: "Anillos",
+    description: "Diseños para todos los dias y ocasiones especiales.",
+    active: true,
+    sortOrder: 2,
+  },
+  {
+    slug: "collares",
+    name: "Collares",
+    description: "Joyas pensadas para sumar presencia y elegancia.",
+    active: true,
+    sortOrder: 3,
+  },
+  {
+    slug: "pulseras",
+    name: "Pulseras",
+    description: "Detalles finos para regalar o completar una coleccion.",
+    active: true,
+    sortOrder: 4,
+  },
+];
+
 export const PRODUCTS: Product[] = [
   {
     id: "canasta-trenzada",
@@ -26,6 +66,10 @@ export const PRODUCTS: Product[] = [
     image: canastaImage,
     description:
       "Caravanas tix bebe abridores en oro amarillo 18 k y perla de cultivo 4 mm.",
+    category: "Coleccion Bebe",
+    categorySlug: "bebe",
+    collection: null,
+    collectionSlug: null,
   },
   {
     id: "bolita-mediana",
@@ -34,6 +78,10 @@ export const PRODUCTS: Product[] = [
     image: bolitaImage,
     description:
       "Caravanas tix bebe abridores en oro amarillo 18 k y bolitas 3 1/2 mm",
+    category: "Coleccion Bebe",
+    categorySlug: "bebe",
+    collection: null,
+    collectionSlug: null,
   },
   {
     id: "modelo-simple",
@@ -42,6 +90,10 @@ export const PRODUCTS: Product[] = [
     image: simpleImage,
     description:
       "Caravanas tix bebe abridores en oro amarillo 18 k y perla de cultivo 4 mm.",
+    category: "Coleccion Bebe",
+    categorySlug: "bebe",
+    collection: null,
+    collectionSlug: null,
   },
   {
     id: "modelo-coronita",
@@ -50,6 +102,10 @@ export const PRODUCTS: Product[] = [
     image: coronitaImage,
     description:
       "Caravanas tix bebe abridores en oro amarillo 18 k y perla de cultivo 4 mm.",
+    category: "Coleccion Bebe",
+    categorySlug: "bebe",
+    collection: null,
+    collectionSlug: null,
   },
 ];
 

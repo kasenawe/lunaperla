@@ -11,7 +11,27 @@ type ProductApiItem = {
   description?: string;
   image?: string;
   image_url?: string;
+  category?: string;
+  category_slug?: string;
+  collection?: string | null;
+  collection_slug?: string | null;
 };
+
+function normalizeCategoryName(name?: string, slug?: string) {
+  if (name?.trim()) {
+    return name.trim();
+  }
+
+  if (slug?.trim()) {
+    return slug
+      .split("-")
+      .filter(Boolean)
+      .map((chunk) => chunk.charAt(0).toUpperCase() + chunk.slice(1))
+      .join(" ");
+  }
+
+  return "Coleccion Bebe";
+}
 
 export async function getProducts(): Promise<Product[]> {
   try {
@@ -34,13 +54,16 @@ export async function getProducts(): Promise<Product[]> {
           price: normalizedPrice,
           image: normalizeImageUrl(item.image ?? item.image_url),
           description: item.description ?? "",
+          category: normalizeCategoryName(item.category, item.category_slug),
+          categorySlug: item.category_slug ?? "bebe",
+          collection: item.collection?.trim() || null,
+          collectionSlug: item.collection_slug ?? null,
         } satisfies Product;
       })
       .filter((item): item is Product => item !== null);
 
     return mappedProducts.length > 0 ? mappedProducts : PRODUCTS;
   } catch {
-    // Fallback to static products
     return PRODUCTS;
   }
 }

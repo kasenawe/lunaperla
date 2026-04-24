@@ -7,20 +7,24 @@ import PaymentMethods from "../components/PaymentMethods";
 import FAQ from "../components/FAQ";
 import WhatsAppButton from "../components/WhatsAppButton";
 import PurchaseModal from "../components/PurchaseModal";
-import { Product } from "../types";
+import { Category, Product } from "../types";
 import { LOGO_URL, LOGO_SIMPLE_URL } from "../constants";
+import { getCategories } from "../services/catalogService";
 import { getProducts } from "../services/productService";
 
 export default function Home() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [activeCategorySlug, setActiveCategorySlug] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
 
   useEffect(() => {
-    getProducts()
-      .then((data) => {
-        setProducts(data);
+    Promise.all([getProducts(), getCategories()])
+      .then(([productData, categoryData]) => {
+        setProducts(productData);
+        setCategories(categoryData);
         setLoading(false);
       })
       .catch(() => {
@@ -33,9 +37,20 @@ export default function Home() {
     setSelectedProduct(product);
   };
 
+  const categoriesWithProducts = categories.filter((category) =>
+    products.some((product) => product.categorySlug === category.slug),
+  );
+
+  const visibleCategories =
+    activeCategorySlug === "all"
+      ? categoriesWithProducts
+      : categoriesWithProducts.filter(
+          (category) => category.slug === activeCategorySlug,
+        );
+
   return (
     <main className="min-h-screen selection:bg-gold/30">
-      <Navbar />
+      <Navbar categories={categoriesWithProducts} />
       {/* Hero Section */}
       <Hero />
 
@@ -53,7 +68,65 @@ export default function Home() {
           </p>
         </section>
       ) : (
-        <ProductGrid products={products} onBuy={handleBuy} />
+        <>
+          <section
+            id="productos"
+            className="px-4 pt-24 pb-10 bg-zinc-50 scroll-mt-28"
+          >
+            <div className="max-w-6xl mx-auto text-center">
+              <p className="text-zinc-500 uppercase tracking-[0.3em] text-xs mb-4">
+                Catalogo dinamico
+              </p>
+              <h2 className="text-4xl md:text-5xl font-serif text-black mb-4">
+                Joyeria organizada por categoria
+              </h2>
+              <p className="text-zinc-600 max-w-2xl mx-auto mb-10">
+                La tienda ya no depende de una unica coleccion. Puedes destacar
+                nuevas lineas como bebe, alianzas u otras piezas sin rehacer la
+                home.
+              </p>
+
+              <div className="flex flex-wrap justify-center gap-3">
+                <button
+                  onClick={() => setActiveCategorySlug("all")}
+                  className={`px-5 py-2 border text-xs uppercase tracking-[0.2em] transition-colors ${
+                    activeCategorySlug === "all"
+                      ? "border-black bg-black text-white"
+                      : "border-zinc-300 text-zinc-700 hover:border-black"
+                  }`}
+                >
+                  Todas
+                </button>
+                {categoriesWithProducts.map((category) => (
+                  <button
+                    key={category.slug}
+                    onClick={() => setActiveCategorySlug(category.slug)}
+                    className={`px-5 py-2 border text-xs uppercase tracking-[0.2em] transition-colors ${
+                      activeCategorySlug === category.slug
+                        ? "border-black bg-black text-white"
+                        : "border-zinc-300 text-zinc-700 hover:border-black"
+                    }`}
+                  >
+                    {category.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {visibleCategories.map((category) => (
+            <ProductGrid
+              key={category.slug}
+              sectionId={`categoria-${category.slug}`}
+              title={category.name}
+              subtitle={category.description}
+              products={products.filter(
+                (product) => product.categorySlug === category.slug,
+              )}
+              onBuy={handleBuy}
+            />
+          ))}
+        </>
       )}
 
       {/* Trust & Quality Section */}

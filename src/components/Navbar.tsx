@@ -1,9 +1,16 @@
-import { motion } from 'motion/react';
-import { LOGO_SIMPLE_URL } from '../constants';
+import { motion } from "motion/react";
+import { Category } from "../types";
+import { LOGO_SIMPLE_URL } from "../constants";
 
-export default function Navbar() {
+interface NavbarProps {
+  categories?: Category[];
+}
+
+export default function Navbar({ categories = [] }: NavbarProps) {
+  const catalogHref = categories.length > 0 ? "#productos" : "/#productos";
+
   return (
-    <motion.nav 
+    <motion.nav
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.8 }}
@@ -19,10 +26,20 @@ export default function Navbar() {
           className="h-10 w-auto object-contain md:h-12 drop-shadow-[0_6px_18px_rgba(0,0,0,0.35)]"
         />
       </a>
-      
+
       <div className="hidden md:flex gap-8 text-white text-xs uppercase tracking-widest mix-blend-difference">
-        <a href="#productos" className="hover:opacity-70 transition-opacity">Colección</a>
-        <a href="#contacto" className="hover:opacity-70 transition-opacity">Contacto</a>
+        <a href={catalogHref} className="hover:opacity-70 transition-opacity">
+          Catalogo
+        </a>
+        {categories.slice(0, 4).map((category) => (
+          <a
+            key={category.slug}
+            href={`#categoria-${category.slug}`}
+            className="hover:opacity-70 transition-opacity"
+          >
+            {category.name}
+          </a>
+        ))}
       </div>
     </motion.nav>
   );

@@ -2,19 +2,34 @@ import { motion } from "motion/react";
 import { Product } from "../types";
 
 interface ProductGridProps {
+  title: string;
+  subtitle?: string;
+  sectionId?: string;
   products: Product[];
   onBuy: (product: Product) => void;
 }
 
-export default function ProductGrid({ products, onBuy }: ProductGridProps) {
+export default function ProductGrid({
+  title,
+  subtitle,
+  sectionId,
+  products,
+  onBuy,
+}: ProductGridProps) {
+  if (products.length === 0) {
+    return null;
+  }
+
   return (
-    <section id="productos" className="py-24 px-4 bg-zinc-50">
+    <section id={sectionId} className="py-16 px-4 bg-zinc-50 scroll-mt-28">
       <div className="max-w-6xl mx-auto">
         <div className="text-center mb-16">
-          <h2 className="text-4xl mb-4">Colección Bebé</h2>
-          <p className="text-zinc-500 uppercase tracking-widest text-xs">
-            Uruguay Exclusive
-          </p>
+          <h2 className="text-4xl mb-4 font-serif text-black">{title}</h2>
+          {subtitle ? (
+            <p className="text-zinc-500 uppercase tracking-widest text-xs max-w-2xl mx-auto">
+              {subtitle}
+            </p>
+          ) : null}
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24">
@@ -39,6 +54,11 @@ export default function ProductGrid({ products, onBuy }: ProductGridProps) {
               </div>
 
               <div className="text-center">
+                {product.collection ? (
+                  <p className="text-[11px] uppercase tracking-[0.3em] text-gold mb-3">
+                    {product.collection}
+                  </p>
+                ) : null}
                 <h3 className="text-2xl mb-2">{product.name}</h3>
                 <p className="text-zinc-500 font-light mb-4">
                   {product.description}
