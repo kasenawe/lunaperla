@@ -75,15 +75,14 @@ export default function Home() {
           >
             <div className="max-w-6xl mx-auto text-center">
               <p className="text-zinc-500 uppercase tracking-[0.3em] text-xs mb-4">
-                Catalogo dinamico
+                Nuestras colecciones
               </p>
               <h2 className="text-4xl md:text-5xl font-serif text-black mb-4">
-                Joyeria organizada por categoria
+                Joyas para cada momento
               </h2>
               <p className="text-zinc-600 max-w-2xl mx-auto mb-10">
-                La tienda ya no depende de una unica coleccion. Puedes destacar
-                nuevas lineas como bebe, alianzas u otras piezas sin rehacer la
-                home.
+                Descubre piezas para bebe, alianzas y mas colecciones
+                seleccionadas con la calidad y delicadeza de Luna Gold.
               </p>
 
               <div className="flex flex-wrap justify-center gap-3">
