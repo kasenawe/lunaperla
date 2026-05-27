@@ -18,6 +18,12 @@ import {
   updateCategory,
   updateCollection,
 } from "../services/catalogService";
+import {
+  buildAuthHeaders,
+  clearAdminToken,
+  isAdminAuthenticated,
+  loginAdmin,
+} from "../services/adminAuthService";
 
 const API_BASE_URL = import.meta.env.DEV ? "" : BACKEND_URL;
 
@@ -38,6 +44,13 @@ async function parseErrorMessage(response: Response, fallback: string) {
 }
 
 export const Admin: React.FC = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
+  const [credentials, setCredentials] = useState({
+    username: "",
+    password: "",
+  });
   const [section, setSection] = useState<AdminSection>("products");
   const [products, setProducts] = useState<BackendProduct[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -59,10 +72,22 @@ export const Admin: React.FC = () => {
   );
 
   useEffect(() => {
+    setIsAuthenticated(isAdminAuthenticated());
+    setAuthLoading(false);
+  }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setLoadingProducts(false);
+      setLoadingCategories(false);
+      setLoadingCollections(false);
+      return;
+    }
+
     void fetchProducts();
     void fetchCategories();
     void fetchCollections();
-  }, []);
+  }, [isAuthenticated]);
 
   useEffect(() => {
     if (!message) {
@@ -82,7 +107,17 @@ export const Admin: React.FC = () => {
     try {
       setLoadingProducts(true);
       setError(null);
-      const response = await fetch(`${API_BASE_URL}/api/products?all=true`);
+      const response = await fetch(`${API_BASE_URL}/api/products?all=true`, {
+        headers: buildAuthHeaders(),
+      });
+
+      if (response.status === 401) {
+        clearAdminToken();
+        setIsAuthenticated(false);
+        setAuthError("Tu sesión expiró. Volvé a iniciar sesión.");
+        return;
+      }
+
       if (!response.ok) {
         throw new Error(
           await parseErrorMessage(response, "Error al cargar productos"),
@@ -147,9 +182,15 @@ export const Admin: React.FC = () => {
   const handleCreateProduct = async (data: Omit<BackendProduct, "id">) => {
     const response = await fetch(`${API_BASE_URL}/api/products`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: buildAuthHeaders({ "Content-Type": "application/json" }),
       body: JSON.stringify(data),
     });
+
+    if (response.status === 401) {
+      clearAdminToken();
+      setIsAuthenticated(false);
+      throw new Error("Tu sesión expiró. Volvé a iniciar sesión.");
+    }
 
     if (!response.ok) {
       throw new Error(
@@ -171,10 +212,16 @@ export const Admin: React.FC = () => {
       `${API_BASE_URL}/api/products/${editingProduct.id}`,
       {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: buildAuthHeaders({ "Content-Type": "application/json" }),
         body: JSON.stringify(data),
       },
     );
+
+    if (response.status === 401) {
+      clearAdminToken();
+      setIsAuthenticated(false);
+      throw new Error("Tu sesión expiró. Volvé a iniciar sesión.");
+    }
 
     if (!response.ok) {
       throw new Error(
@@ -195,7 +242,14 @@ export const Admin: React.FC = () => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/products/${id}`, {
         method: "DELETE",
+        headers: buildAuthHeaders(),
       });
+
+      if (response.status === 401) {
+        clearAdminToken();
+        setIsAuthenticated(false);
+        throw new Error("Tu sesión expiró. Volvé a iniciar sesión.");
+      }
 
       if (!response.ok) {
         throw new Error(
@@ -215,6 +269,113 @@ export const Admin: React.FC = () => {
       });
     }
   };
+
+  const handleLogin = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    try {
+      setAuthError(null);
+      await loginAdmin(credentials);
+      setCredentials({ username: "", password: "" });
+      setIsAuthenticated(true);
+    } catch (loginError) {
+      setAuthError(
+        loginError instanceof Error
+          ? loginError.message
+          : "No se pudo iniciar sesión",
+      );
+    }
+  };
+
+  const handleLogout = () => {
+    clearAdminToken();
+    setIsAuthenticated(false);
+    setProducts([]);
+    setCategories([]);
+    setCollections([]);
+    setMessage(null);
+    setError(null);
+    resetForms();
+  };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white px-4">
+        <p className="text-zinc-600">Cargando panel admin...</p>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col">
+        <Navbar categories={[]} />
+        <main className="flex-1 container mx-auto px-4 py-12 max-w-md w-full">
+          <div className="border border-zinc-200 rounded-xl p-6">
+            <h1 className="text-3xl font-serif font-bold text-black mb-2">
+              Acceso Admin
+            </h1>
+            <p className="text-zinc-600 mb-6">
+              Ingresá con tus credenciales para gestionar el catálogo.
+            </p>
+
+            {authError ? (
+              <div className="mb-4 px-4 py-3 rounded-lg border bg-red-50 border-red-200 text-red-700">
+                {authError}
+              </div>
+            ) : null}
+
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 mb-1">
+                  Usuario
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={credentials.username}
+                  onChange={(event) =>
+                    setCredentials((prev) => ({
+                      ...prev,
+                      username: event.target.value,
+                    }))
+                  }
+                  className="w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black/50"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-zinc-700 mb-1">
+                  Contraseña
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={credentials.password}
+                  onChange={(event) =>
+                    setCredentials((prev) => ({
+                      ...prev,
+                      password: event.target.value,
+                    }))
+                  }
+                  className="w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black/50"
+                />
+              </div>
+
+              <button
+                type="submit"
+                className="w-full bg-black text-white px-6 py-3 rounded hover:bg-black/90 transition-colors uppercase text-sm font-medium tracking-widest"
+              >
+                Ingresar
+              </button>
+            </form>
+          </div>
+        </main>
+        <Footer />
+        <WhatsAppButton />
+      </div>
+    );
+  }
 
   const handleCreateCategory = async (payload: {
     slug: string;
@@ -341,6 +502,14 @@ export const Admin: React.FC = () => {
           <p className="text-zinc-600">
             Gestiona productos, categorias y colecciones del catalogo.
           </p>
+          <div className="mt-4">
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 border border-zinc-300 text-zinc-700 hover:border-black hover:text-black transition-colors uppercase text-xs tracking-[0.2em]"
+            >
+              Cerrar sesión
+            </button>
+          </div>
         </div>
 
         <div className="mb-8 flex flex-wrap gap-3">

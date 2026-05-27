@@ -1,5 +1,6 @@
 import { BACKEND_URL, DEFAULT_CATEGORIES } from "../constants";
 import { Category, Collection } from "../types";
+import { buildAuthHeaders, clearAdminToken } from "./adminAuthService";
 
 const API_BASE_URL = import.meta.env.DEV ? "" : BACKEND_URL;
 
@@ -73,7 +74,15 @@ async function parseError(response: Response) {
 }
 
 async function requestJson<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, init);
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...init,
+    headers: buildAuthHeaders(init?.headers),
+  });
+
+  if (response.status === 401) {
+    clearAdminToken();
+  }
+
   if (!response.ok) {
     throw new Error(await parseError(response));
   }

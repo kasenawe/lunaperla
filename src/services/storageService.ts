@@ -1,4 +1,5 @@
 import { BACKEND_URL } from "../constants";
+import { buildAuthHeaders, clearAdminToken } from "./adminAuthService";
 
 type UploadImageResponse = {
   image_url?: string;
@@ -22,8 +23,13 @@ export async function uploadProductImage(file: File): Promise<string> {
 
   const response = await fetch(`${API_BASE_URL}/api/upload-image`, {
     method: "POST",
+    headers: buildAuthHeaders(),
     body: formData,
   });
+
+  if (response.status === 401) {
+    clearAdminToken();
+  }
 
   const result = (await response.json()) as UploadImageResponse;
   if (!response.ok) {
