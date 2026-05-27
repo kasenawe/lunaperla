@@ -175,6 +175,9 @@ Desde este proyecto:
 
 Este frontend espera un backend Node/Express en una carpeta hermana (`../lunaperla-backend`) con al menos:
 
+- Arquitectura modular en `src/` (config, clients, routes, views, middlewares, utils).
+- Entry point local en `src/server.js` y app Express exportada desde `src/app.js`.
+
 - `GET /api/products`
 - `GET /api/products?all=true`
 - `GET /api/categories`
