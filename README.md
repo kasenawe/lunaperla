@@ -53,6 +53,8 @@ E-commerce de joyeria infantil para Uruguay, construido con React + TypeScript +
 
 - Ruta dedicada: `/admin` en [src/App.tsx](src/App.tsx).
 - Página de administración en [src/pages/Admin.tsx](src/pages/Admin.tsx).
+- Login en navegador para admin (JWT) con persistencia de sesión en `localStorage`.
+- Envío automático de `Authorization: Bearer <token>` en operaciones protegidas.
 - CRUD completo de productos:
   - listado con `GET /api/products?all=true`
   - creación con `POST /api/products`
@@ -148,6 +150,7 @@ Notas:
 - El frontend ya no sube imágenes directamente a Supabase; esa operación se hace en backend con service role.
 - `image_url` se guarda en base como path del objeto en Storage, no como URL pública completa.
 - Si el backend o las tablas de catalogo no están disponibles, el frontend usa fallback local de productos y categorias definido en [src/constants.ts](src/constants.ts).
+- Para `/admin`, necesitás iniciar sesión con credenciales configuradas en backend (`ADMIN_USERNAME` y `ADMIN_PASSWORD`).
 
 Nota: la URL de backend para pagos está definida en [src/constants.ts](src/constants.ts) como `BACKEND_URL` (producción) y `BACKEND_URL_LOCAL` (desarrollo).
 
@@ -194,9 +197,12 @@ Este frontend espera un backend Node/Express en una carpeta hermana (`../lunaper
 - `PUT /api/products/:id`
 - `DELETE /api/products/:id`
 - `POST /api/upload-image`
+- `POST /api/auth/login`
 - `POST /api/create-payment`
 - `POST /api/webhook`
 - `GET /api/health`
+
+Nota: las rutas administrativas de escritura/gestión y dashboard API están protegidas por JWT y requieren Bearer token.
 
 ## Contenido Editable Rápido
 
