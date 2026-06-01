@@ -12,7 +12,9 @@ E-commerce de joyeria infantil para Uruguay, construido con React + TypeScript +
 - Home con catalogo dinamico por categorias, filtros y secciones generadas desde datos reales.
 - Panel administrativo en `/admin` para gestionar productos, categorias y colecciones.
 - Panel administrativo con campo `Codigo de producto` en alta/edición y listado.
+- Panel administrativo con gestion de variantes por producto (SKU, etiqueta, kilataje, mm, perfil, cierre, precio, orden, estado y metadata JSON).
 - Flujo de compra con modal y formulario de datos del cliente.
+- Flujo de compra con seleccion de variantes activas y precio dinamico por variante.
 - Integracion de Mercado Pago via backend (creacion de preferencia y redireccion al checkout).
 - Integracion de WhatsApp para consultas y pedidos con transferencia/efectivo.
 - Productos dinámicos desde backend (base de datos Supabase).
@@ -62,6 +64,11 @@ E-commerce de joyeria infantil para Uruguay, construido con React + TypeScript +
   - edición con `PUT /api/products/:id`
   - eliminación con `DELETE /api/products/:id`
 - El formulario de producto permite cargar `product_code` (opcional y único en backend).
+- Al editar un producto, incluye gestion de variantes:
+  - listado con `GET /api/products/:id/variants`
+  - creación con `POST /api/products/:id/variants`
+  - edición con `PUT /api/products/:id/variants/:variantId`
+  - eliminación con `DELETE /api/products/:id/variants/:variantId`
 - Al editar o crear productos, categorias y colecciones, el panel hace scroll automático al formulario para mantener el contexto.
 - CRUD completo de categorias:
   - listado con `GET /api/categories?all=true`
@@ -85,6 +92,7 @@ E-commerce de joyeria infantil para Uruguay, construido con React + TypeScript +
   - Solicita nombre, telefono y email.
   - Llama al backend en `/api/create-payment`.
   - Envía `product_code` dentro de `product` cuando está disponible.
+  - Si existe variante seleccionada, envía tambien `productVariant` con snapshot de la variante (sku, label, karat, width_mm, profile, closure_type, price, metadata).
   - Redirige al `init_point` de Mercado Pago.
 - Transferencia bancaria y efectivo:
   - Solicita nombre, telefono y direccion.
@@ -103,7 +111,7 @@ Implementadas en [src/App.tsx](src/App.tsx) y paginas en [src/pages](src/pages).
 ## Arquitectura (Frontend)
 
 - [src/pages/Home.tsx](src/pages/Home.tsx): compone la página principal, carga productos y categorias, y arma secciones dinámicas por categoria.
-- [src/pages/Admin.tsx](src/pages/Admin.tsx): panel de administración por pestañas para productos, categorias y colecciones.
+- [src/pages/Admin.tsx](src/pages/Admin.tsx): panel de administración por pestañas para productos, categorias y colecciones, incluyendo gestion de variantes por producto.
 - [src/services/productService.ts](src/services/productService.ts): servicio de fetch de productos con normalización de URLs y fallback.
 - [src/services/catalogService.ts](src/services/catalogService.ts): servicio de CRUD para categorias y colecciones.
 - [src/services/storageService.ts](src/services/storageService.ts): subida de imágenes al backend usando `multipart/form-data`.
@@ -112,11 +120,11 @@ Implementadas en [src/App.tsx](src/App.tsx) y paginas en [src/pages](src/pages).
 - [src/components/ProductForm.tsx](src/components/ProductForm.tsx): formulario reutilizable para el CRUD del admin, con categoria, coleccion opcional y campo `Codigo de producto` (`product_code`).
 - [src/components/CategoryForm.tsx](src/components/CategoryForm.tsx): formulario reutilizable para categorias.
 - [src/components/CollectionForm.tsx](src/components/CollectionForm.tsx): formulario reutilizable para colecciones.
-- [src/components/PurchaseModal.tsx](src/components/PurchaseModal.tsx): concentra la lógica de checkout.
+- [src/components/PurchaseModal.tsx](src/components/PurchaseModal.tsx): concentra la lógica de checkout y seleccion de variantes para precio/codigo.
 - [src/components/Navbar.tsx](src/components/Navbar.tsx): navegación superior con accesos a categorias activas.
 - [src/components/Footer.tsx](src/components/Footer.tsx): footer reutilizable para páginas internas.
 - [src/constants.ts](src/constants.ts): productos, categorias y colecciones de fallback, FAQ, logos, WhatsApp y URLs de backend.
-- [src/types.ts](src/types.ts): tipos compartidos (`Product`, `BackendProduct`, `Category`, `Collection`, `FAQItem`, `PaymentMethod`).
+- [src/types.ts](src/types.ts): tipos compartidos (`CatalogProduct`, `ProductVariant`, `BackendProduct`, `BackendProductVariant`, `Category`, `Collection`, `FAQItem`, `PaymentMethod`).
 
 ## Estructura del Proyecto
 
@@ -200,6 +208,10 @@ Este frontend espera un backend Node/Express en una carpeta hermana (`../lunaper
 - `POST /api/products`
 - `PUT /api/products/:id`
 - `DELETE /api/products/:id`
+- `GET /api/products/:id/variants`
+- `POST /api/products/:id/variants`
+- `PUT /api/products/:id/variants/:variantId`
+- `DELETE /api/products/:id/variants/:variantId`
 - `POST /api/upload-image`
 - `POST /api/auth/login`
 - `POST /api/create-payment`
@@ -211,6 +223,7 @@ Nota: las rutas administrativas de escritura/gestión y dashboard API están pro
 ## Contenido Editable Rápido
 
 - **Productos**: tabla `products` en Supabase (ver instrucciones en backend).
+- **Variantes de productos**: tabla `product_variants` en Supabase o panel `/admin` al editar un producto.
 - **Categorias**: tabla `categories` en Supabase o panel `/admin`.
 - **Colecciones**: tabla `collections` en Supabase o panel `/admin`.
 - **Productos, categorias y colecciones (fallback local)**: [src/constants.ts](src/constants.ts) para cuando falla el API o faltan migraciones.
@@ -218,3 +231,7 @@ Nota: las rutas administrativas de escritura/gestión y dashboard API están pro
 - **Número de WhatsApp**: [src/constants.ts](src/constants.ts)
 - **Imágenes de productos**: bucket `products` en Supabase Storage; el frontend renderiza desde el path guardado en `image_url`.
 - **Textos de estados de pago**: [src/pages/Success.tsx](src/pages/Success.tsx), [src/pages/Failure.tsx](src/pages/Failure.tsx), [src/pages/Pending.tsx](src/pages/Pending.tsx)
+
+## Manual de uso para administración
+
+- Manual final para uso diario del panel admin: [MANUAL-USUARIO-ADMIN.md](MANUAL-USUARIO-ADMIN.md)
