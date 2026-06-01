@@ -1,14 +1,30 @@
-export interface Product {
+export interface CatalogProduct {
   id: string;
   name: string;
   price: number;
   image: string;
   description: string;
-  productCode?: string | null;
+  productCode: string | null;
   category: string;
   categorySlug: string;
   collection: string | null;
   collectionSlug: string | null;
+  variants?: ProductVariant[];
+}
+
+export interface ProductVariant {
+  id: string;
+  productId: string;
+  sku: string;
+  label: string;
+  karat: string | null;
+  widthMm: number | null;
+  profile: string | null;
+  closureType: string | null;
+  price: number;
+  active: boolean;
+  sortOrder: number;
+  metadata: Record<string, unknown>;
 }
 
 export interface BackendProduct {
@@ -23,6 +39,22 @@ export interface BackendProduct {
   category_slug: string;
   collection: string | null;
   collection_slug: string | null;
+  variants?: BackendProductVariant[];
+}
+
+export interface BackendProductVariant {
+  id: string;
+  product_id: string;
+  sku: string;
+  label: string;
+  karat: string | null;
+  width_mm: number | string | null;
+  profile: string | null;
+  closure_type: string | null;
+  price: number | string;
+  active: boolean;
+  sort_order: number;
+  metadata: Record<string, unknown>;
 }
 
 export interface Category {

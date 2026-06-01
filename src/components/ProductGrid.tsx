@@ -1,12 +1,12 @@
 import { motion } from "motion/react";
-import { Product } from "../types";
+import { CatalogProduct } from "../types";
 
 interface ProductGridProps {
   title: string;
   subtitle?: string;
   sectionId?: string;
-  products: Product[];
-  onBuy: (product: Product) => void;
+  products: CatalogProduct[];
+  onBuy: (product: CatalogProduct) => void;
 }
 
 export default function ProductGrid({

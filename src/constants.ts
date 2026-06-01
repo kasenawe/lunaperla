@@ -1,4 +1,4 @@
-import { Product, FAQItem, Category } from "./types";
+import { CatalogProduct, FAQItem, Category } from "./types";
 
 // Logo completo (con texto) para el hero
 export const LOGO_URL = new URL(
@@ -58,7 +58,7 @@ export const DEFAULT_CATEGORIES: Category[] = [
   },
 ];
 
-export const PRODUCTS: Product[] = [
+export const PRODUCTS: CatalogProduct[] = [
   {
     id: "canasta-trenzada",
     name: "Canasta trenzada",
@@ -66,6 +66,7 @@ export const PRODUCTS: Product[] = [
     image: canastaImage,
     description:
       "Caravanas tix bebe abridores en oro amarillo 18 k y perla de cultivo 4 mm.",
+    productCode: null,
     category: "Coleccion Bebe",
     categorySlug: "bebe",
     collection: null,
@@ -78,6 +79,7 @@ export const PRODUCTS: Product[] = [
     image: bolitaImage,
     description:
       "Caravanas tix bebe abridores en oro amarillo 18 k y bolitas 3 1/2 mm",
+    productCode: null,
     category: "Coleccion Bebe",
     categorySlug: "bebe",
     collection: null,
@@ -90,6 +92,7 @@ export const PRODUCTS: Product[] = [
     image: simpleImage,
     description:
       "Caravanas tix bebe abridores en oro amarillo 18 k y perla de cultivo 4 mm.",
+    productCode: null,
     category: "Coleccion Bebe",
     categorySlug: "bebe",
     collection: null,
@@ -102,6 +105,7 @@ export const PRODUCTS: Product[] = [
     image: coronitaImage,
     description:
       "Caravanas tix bebe abridores en oro amarillo 18 k y perla de cultivo 4 mm.",
+    productCode: null,
     category: "Coleccion Bebe",
     categorySlug: "bebe",
     collection: null,

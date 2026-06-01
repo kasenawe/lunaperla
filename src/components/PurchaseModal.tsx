@@ -1,11 +1,11 @@
 import { useState, FormEvent } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, ArrowRight, CreditCard, Landmark, Banknote } from "lucide-react";
-import { Product, PaymentMethod } from "../types";
+import { CatalogProduct, PaymentMethod } from "../types";
 import { BACKEND_URL, WHATSAPP_NUMBER } from "../constants";
 
 interface PurchaseModalProps {
-  product: Product | null;
+  product: CatalogProduct | null;
   onClose: () => void;
 }
 
@@ -15,6 +15,7 @@ export default function PurchaseModal({
 }: PurchaseModalProps) {
   const [step, setStep] = useState<"options" | "form">("options");
   const [method, setMethod] = useState<PaymentMethod | null>(null);
+  const [selectedVariantId, setSelectedVariantId] = useState<string>("");
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -24,8 +25,17 @@ export default function PurchaseModal({
 
   if (!product) return null;
 
+  const activeVariants = (product.variants || []).filter((variant) => variant.active);
+  const selectedVariant =
+    activeVariants.find((variant) => variant.id === selectedVariantId) ||
+    activeVariants[0] ||
+    null;
+  const displayPrice = selectedVariant?.price ?? product.price;
+  const selectedProductCode = selectedVariant?.sku || product.productCode || null;
+
   const handleMethodSelect = (selectedMethod: PaymentMethod) => {
     setMethod(selectedMethod);
+    setSelectedVariantId((current) => current || activeVariants[0]?.id || "");
     setStep("form"); // Siempre ir al formulario primero para recopilar datos
   };
 
@@ -58,8 +68,22 @@ export default function PurchaseModal({
           body: JSON.stringify({
             product: {
               ...product,
-              product_code: product.productCode ?? null,
+              price: displayPrice,
+              product_code: selectedProductCode,
             },
+            productVariant: selectedVariant
+              ? {
+                  id: selectedVariant.id,
+                  sku: selectedVariant.sku,
+                  label: selectedVariant.label,
+                  karat: selectedVariant.karat,
+                  width_mm: selectedVariant.widthMm,
+                  profile: selectedVariant.profile,
+                  closure_type: selectedVariant.closureType,
+                  price: selectedVariant.price,
+                  metadata: selectedVariant.metadata,
+                }
+              : null,
             customerData: {
               name: formData.name,
               phone: formData.phone,
@@ -91,7 +115,8 @@ export default function PurchaseModal({
       const message = encodeURIComponent(
         `*Nuevo Pedido - Luna Gold*\n\n` +
           `*Producto:* ${product.name}\n` +
-          `*Precio:* USD ${product.price}\n` +
+          `${selectedVariant ? `*Variante:* ${selectedVariant.label}\n` : ""}` +
+          `*Precio:* USD ${displayPrice}\n` +
           `*Método de Pago:* ${methodText}\n\n` +
           `*Datos del Cliente:*\n` +
           `- Nombre: ${formData.name}\n` +
@@ -136,8 +161,41 @@ export default function PurchaseModal({
                     Finalizar Compra
                   </p>
                   <h2 className="text-3xl mb-2">{product.name}</h2>
-                  <p className="text-xl font-medium">USD {product.price}</p>
+                  {selectedVariant ? (
+                    <p className="text-sm text-zinc-500 uppercase tracking-[0.2em] mb-2">
+                      {selectedVariant.label}
+                    </p>
+                  ) : null}
+                  <p className="text-xl font-medium">USD {displayPrice}</p>
                 </div>
+
+                {activeVariants.length > 0 ? (
+                  <div className="mb-8">
+                    <label className="block text-xs uppercase tracking-widest text-zinc-500 mb-2">
+                      Seleccioná una variante
+                    </label>
+                    <select
+                      value={selectedVariantId || activeVariants[0]?.id || ""}
+                      onChange={(event) => setSelectedVariantId(event.target.value)}
+                      className="w-full border border-zinc-200 px-4 py-3 bg-white"
+                    >
+                      {activeVariants.map((variant) => (
+                        <option key={variant.id} value={variant.id}>
+                          {variant.label} — USD {variant.price}
+                        </option>
+                      ))}
+                    </select>
+
+                    <div className="mt-3 text-sm text-zinc-500 space-y-1">
+                      {selectedVariant?.karat ? <p>Kilates: {selectedVariant.karat}</p> : null}
+                      {selectedVariant?.widthMm !== null && selectedVariant?.widthMm !== undefined ? (
+                        <p>Ancho: {selectedVariant.widthMm} mm</p>
+                      ) : null}
+                      {selectedVariant?.profile ? <p>Perfil: {selectedVariant.profile}</p> : null}
+                      {selectedVariant?.closureType ? <p>Cierre: {selectedVariant.closureType}</p> : null}
+                    </div>
+                  </div>
+                ) : null}
 
                 <div className="space-y-4">
                   <button

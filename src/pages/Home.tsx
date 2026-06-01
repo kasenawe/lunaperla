@@ -7,14 +7,14 @@ import PaymentMethods from "../components/PaymentMethods";
 import FAQ from "../components/FAQ";
 import WhatsAppButton from "../components/WhatsAppButton";
 import PurchaseModal from "../components/PurchaseModal";
-import { Category, Product } from "../types";
+import { Category, CatalogProduct } from "../types";
 import { LOGO_URL, LOGO_SIMPLE_URL } from "../constants";
 import { getCategories } from "../services/catalogService";
 import { getProducts } from "../services/productService";
 
 export default function Home() {
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [products, setProducts] = useState<Product[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<CatalogProduct | null>(null);
+  const [products, setProducts] = useState<CatalogProduct[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [activeCategorySlug, setActiveCategorySlug] = useState("all");
   const [loading, setLoading] = useState(true);
@@ -33,7 +33,7 @@ export default function Home() {
       });
   }, []);
 
-  const handleBuy = (product: Product) => {
+  const handleBuy = (product: CatalogProduct) => {
     setSelectedProduct(product);
   };
 

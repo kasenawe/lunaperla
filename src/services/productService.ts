@@ -1,4 +1,4 @@
-import { Product } from "../types";
+import { CatalogProduct, ProductVariant } from "../types";
 import { BACKEND_URL, PRODUCTS } from "../constants";
 import { normalizeImageUrl } from "../utils/imageUrl";
 
@@ -16,6 +16,22 @@ type ProductApiItem = {
   category_slug?: string;
   collection?: string | null;
   collection_slug?: string | null;
+  variants?: ProductVariantApiItem[];
+};
+
+type ProductVariantApiItem = {
+  id?: string;
+  product_id?: string;
+  sku?: string;
+  label?: string;
+  karat?: string | null;
+  width_mm?: number | string | null;
+  profile?: string | null;
+  closure_type?: string | null;
+  price?: number | string;
+  active?: boolean;
+  sort_order?: number;
+  metadata?: Record<string, unknown>;
 };
 
 function normalizeCategoryName(name?: string, slug?: string) {
@@ -34,7 +50,32 @@ function normalizeCategoryName(name?: string, slug?: string) {
   return "Coleccion Bebe";
 }
 
-export async function getProducts(): Promise<Product[]> {
+function normalizeVariant(item: ProductVariantApiItem): ProductVariant | null {
+  const normalizedPrice = Number(item.price);
+  if (!item.id || !item.product_id || !item.sku || Number.isNaN(normalizedPrice)) {
+    return null;
+  }
+
+  return {
+    id: item.id,
+    productId: item.product_id,
+    sku: item.sku,
+    label: item.label || item.sku,
+    karat: item.karat ?? null,
+    widthMm:
+      item.width_mm === null || item.width_mm === undefined
+        ? null
+        : Number(item.width_mm),
+    profile: item.profile ?? null,
+    closureType: item.closure_type ?? null,
+    price: normalizedPrice,
+    active: item.active ?? true,
+    sortOrder: item.sort_order ?? 0,
+    metadata: item.metadata ?? {},
+  };
+}
+
+export async function getProducts(): Promise<CatalogProduct[]> {
   try {
     const response = await fetch(`${API_BASE_URL}/api/products`);
     if (!response.ok) {
@@ -42,29 +83,40 @@ export async function getProducts(): Promise<Product[]> {
     }
     const data = (await response.json()) as ProductApiItem[];
 
-    const mappedProducts = data
-      .map((item) => {
-        const normalizedPrice = Number(item.price);
-        if (!item.id || !item.name || Number.isNaN(normalizedPrice)) {
-          return null;
+    const mappedProducts: CatalogProduct[] = [];
+
+    for (const item of data) {
+      const normalizedPrice = Number(item.price);
+      if (!item.id || !item.name || Number.isNaN(normalizedPrice)) {
+        continue;
+      }
+
+      const normalizedVariants: ProductVariant[] = [];
+      for (const variantItem of item.variants || []) {
+        const normalizedVariant = normalizeVariant(variantItem);
+        if (normalizedVariant) {
+          normalizedVariants.push(normalizedVariant);
         }
+      }
 
-        return {
-          id: item.id,
-          name: item.name,
-          price: normalizedPrice,
-          image: normalizeImageUrl(item.image ?? item.image_url),
-          description: item.description ?? "",
-          productCode: item.product_code ?? null,
-          category: normalizeCategoryName(item.category, item.category_slug),
-          categorySlug: item.category_slug ?? "bebe",
-          collection: item.collection?.trim() || null,
-          collectionSlug: item.collection_slug ?? null,
-        } satisfies Product;
-      })
-      .filter((item): item is Product => item !== null);
+      const mappedProduct = {
+        id: item.id,
+        name: item.name,
+        price: normalizedPrice,
+        image: normalizeImageUrl(item.image ?? item.image_url),
+        description: item.description ?? "",
+        productCode: item.product_code ?? null,
+        category: normalizeCategoryName(item.category, item.category_slug),
+        categorySlug: item.category_slug ?? "bebe",
+        collection: item.collection?.trim() || null,
+        collectionSlug: item.collection_slug ?? null,
+        variants: normalizedVariants,
+      };
 
-    return mappedProducts.length > 0 ? mappedProducts : PRODUCTS;
+      mappedProducts.push(mappedProduct);
+    }
+
+    return (mappedProducts.length > 0 ? mappedProducts : PRODUCTS) as CatalogProduct[];
   } catch {
     return PRODUCTS;
   }
