@@ -62,6 +62,7 @@ E-commerce de joyeria infantil para Uruguay, construido con React + TypeScript +
   - edición con `PUT /api/products/:id`
   - eliminación con `DELETE /api/products/:id`
 - El formulario de producto permite cargar `product_code` (opcional y único en backend).
+- Al editar o crear productos, categorias y colecciones, el panel hace scroll automático al formulario para mantener el contexto.
 - CRUD completo de categorias:
   - listado con `GET /api/categories?all=true`
   - creación con `POST /api/categories`

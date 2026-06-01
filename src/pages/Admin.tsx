@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { BACKEND_URL } from "../constants";
 import { BackendProduct, Category, Collection } from "../types";
 import { ProductForm } from "../components/ProductForm";
@@ -70,6 +70,9 @@ export const Admin: React.FC = () => {
   const [editingCollection, setEditingCollection] = useState<Collection | null>(
     null,
   );
+  const productFormRef = useRef<HTMLDivElement | null>(null);
+  const categoryFormRef = useRef<HTMLDivElement | null>(null);
+  const collectionFormRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     setIsAuthenticated(isAdminAuthenticated());
@@ -97,6 +100,63 @@ export const Admin: React.FC = () => {
     const timer = setTimeout(() => setMessage(null), 3000);
     return () => clearTimeout(timer);
   }, [message]);
+
+  useEffect(() => {
+    if (section !== "products") {
+      return;
+    }
+
+    if (!showProductForm && !editingProduct) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      productFormRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [editingProduct, section, showProductForm]);
+
+  useEffect(() => {
+    if (section !== "categories") {
+      return;
+    }
+
+    if (!showCategoryForm && !editingCategory) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      categoryFormRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [editingCategory, section, showCategoryForm]);
+
+  useEffect(() => {
+    if (section !== "collections") {
+      return;
+    }
+
+    if (!showCollectionForm && !editingCollection) {
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      collectionFormRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 0);
+
+    return () => window.clearTimeout(timer);
+  }, [editingCollection, section, showCollectionForm]);
 
   const activeCategories = useMemo(
     () => categories.filter((category) => category.active),
@@ -583,7 +643,7 @@ export const Admin: React.FC = () => {
         ) : null}
 
         {section === "products" && (showProductForm || editingProduct) ? (
-          <div className="mb-8 max-w-xl">
+          <div ref={productFormRef} className="mb-8 max-w-xl scroll-mt-6">
             <ProductForm
               initialData={editingProduct || undefined}
               categories={categories}
@@ -597,7 +657,7 @@ export const Admin: React.FC = () => {
         ) : null}
 
         {section === "categories" && (showCategoryForm || editingCategory) ? (
-          <div className="mb-8 max-w-xl">
+          <div ref={categoryFormRef} className="mb-8 max-w-xl scroll-mt-6">
             <CategoryForm
               initialData={editingCategory || undefined}
               onSubmit={
@@ -610,7 +670,7 @@ export const Admin: React.FC = () => {
 
         {section === "collections" &&
         (showCollectionForm || editingCollection) ? (
-          <div className="mb-8 max-w-xl">
+          <div ref={collectionFormRef} className="mb-8 max-w-xl scroll-mt-6">
             <CollectionForm
               categories={categories}
               initialData={editingCollection || undefined}
