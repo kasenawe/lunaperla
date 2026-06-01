@@ -56,7 +56,10 @@ export default function PurchaseModal({
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            product: product,
+            product: {
+              ...product,
+              product_code: product.productCode ?? null,
+            },
             customerData: {
               name: formData.name,
               phone: formData.phone,

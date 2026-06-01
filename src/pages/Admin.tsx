@@ -644,6 +644,9 @@ export const Admin: React.FC = () => {
                       Nombre
                     </th>
                     <th className="text-left py-3 px-4 font-semibold text-black">
+                      Codigo
+                    </th>
+                    <th className="text-left py-3 px-4 font-semibold text-black">
                       Precio
                     </th>
                     <th className="text-left py-3 px-4 font-semibold text-black">
@@ -667,6 +670,9 @@ export const Admin: React.FC = () => {
                   {products.map((product) => (
                     <tr key={product.id} className="border-b border-zinc-100">
                       <td className="py-3 px-4 text-black">{product.name}</td>
+                      <td className="py-3 px-4 text-zinc-600 font-mono">
+                        {product.product_code || "-"}
+                      </td>
                       <td className="py-3 px-4 text-black font-medium">
                         ${product.price}
                       </td>

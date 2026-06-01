@@ -9,6 +9,7 @@ type ProductApiItem = {
   name?: string;
   price?: number | string;
   description?: string;
+  product_code?: string | null;
   image?: string;
   image_url?: string;
   category?: string;
@@ -54,6 +55,7 @@ export async function getProducts(): Promise<Product[]> {
           price: normalizedPrice,
           image: normalizeImageUrl(item.image ?? item.image_url),
           description: item.description ?? "",
+          productCode: item.product_code ?? null,
           category: normalizeCategoryName(item.category, item.category_slug),
           categorySlug: item.category_slug ?? "bebe",
           collection: item.collection?.trim() || null,

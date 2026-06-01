@@ -11,6 +11,7 @@ E-commerce de joyeria infantil para Uruguay, construido con React + TypeScript +
 - Frontend con rutas completas para checkout: inicio, pago exitoso, pago fallido y pago pendiente.
 - Home con catalogo dinamico por categorias, filtros y secciones generadas desde datos reales.
 - Panel administrativo en `/admin` para gestionar productos, categorias y colecciones.
+- Panel administrativo con campo `Codigo de producto` en alta/edición y listado.
 - Flujo de compra con modal y formulario de datos del cliente.
 - Integracion de Mercado Pago via backend (creacion de preferencia y redireccion al checkout).
 - Integracion de WhatsApp para consultas y pedidos con transferencia/efectivo.
@@ -60,6 +61,7 @@ E-commerce de joyeria infantil para Uruguay, construido con React + TypeScript +
   - creación con `POST /api/products`
   - edición con `PUT /api/products/:id`
   - eliminación con `DELETE /api/products/:id`
+- El formulario de producto permite cargar `product_code` (opcional y único en backend).
 - CRUD completo de categorias:
   - listado con `GET /api/categories?all=true`
   - creación con `POST /api/categories`
@@ -81,6 +83,7 @@ E-commerce de joyeria infantil para Uruguay, construido con React + TypeScript +
 - Mercado Pago:
   - Solicita nombre, telefono y email.
   - Llama al backend en `/api/create-payment`.
+  - Envía `product_code` dentro de `product` cuando está disponible.
   - Redirige al `init_point` de Mercado Pago.
 - Transferencia bancaria y efectivo:
   - Solicita nombre, telefono y direccion.
@@ -105,7 +108,7 @@ Implementadas en [src/App.tsx](src/App.tsx) y paginas en [src/pages](src/pages).
 - [src/services/storageService.ts](src/services/storageService.ts): subida de imágenes al backend usando `multipart/form-data`.
 - [src/utils/imageUrl.ts](src/utils/imageUrl.ts): helper compartido para convertir paths almacenados en URLs públicas renderizables.
 - [src/components/ProductGrid.tsx](src/components/ProductGrid.tsx): recibe productos, titulo y subtitulo para renderizar cada categoria del catalogo.
-- [src/components/ProductForm.tsx](src/components/ProductForm.tsx): formulario reutilizable para el CRUD del admin, con categoria y coleccion opcional.
+- [src/components/ProductForm.tsx](src/components/ProductForm.tsx): formulario reutilizable para el CRUD del admin, con categoria, coleccion opcional y campo `Codigo de producto` (`product_code`).
 - [src/components/CategoryForm.tsx](src/components/CategoryForm.tsx): formulario reutilizable para categorias.
 - [src/components/CollectionForm.tsx](src/components/CollectionForm.tsx): formulario reutilizable para colecciones.
 - [src/components/PurchaseModal.tsx](src/components/PurchaseModal.tsx): concentra la lógica de checkout.

@@ -14,6 +14,7 @@ interface ProductFormProps {
 function buildState(initialData?: BackendProduct) {
   return {
     name: initialData?.name || "",
+    product_code: initialData?.product_code || "",
     price: initialData?.price || 0,
     image_url: initialData?.image_url || "",
     description: initialData?.description || "",
@@ -131,6 +132,7 @@ export const ProductForm: React.FC<ProductFormProps> = ({
 
       await onSubmit({
         ...formData,
+        product_code: formData.product_code?.trim() || null,
         image_url: imageUrl,
         category:
           selectedCategory?.name || initialData?.category || "Coleccion Bebe",
@@ -188,6 +190,25 @@ export const ProductForm: React.FC<ProductFormProps> = ({
           required
           className="w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black/50"
           placeholder="Ej: Canasta trenzada"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-zinc-700 mb-1">
+          Codigo de producto
+        </label>
+        <input
+          type="text"
+          name="product_code"
+          value={formData.product_code}
+          onChange={(event) =>
+            setFormData((prev) => ({
+              ...prev,
+              product_code: event.target.value,
+            }))
+          }
+          className="w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black/50"
+          placeholder="Ej: LP-CAN-001"
         />
       </div>
 

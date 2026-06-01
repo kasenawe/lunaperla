@@ -4,6 +4,7 @@ export interface Product {
   price: number;
   image: string;
   description: string;
+  productCode?: string | null;
   category: string;
   categorySlug: string;
   collection: string | null;
@@ -16,6 +17,7 @@ export interface BackendProduct {
   price: number;
   image_url: string;
   description: string;
+  product_code?: string | null;
   active: boolean;
   category: string;
   category_slug: string;
