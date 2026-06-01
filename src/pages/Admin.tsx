@@ -1,6 +1,11 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { BACKEND_URL } from "../constants";
-import { BackendProduct, Category, Collection } from "../types";
+import {
+  BackendProduct,
+  BackendProductVariant,
+  Category,
+  Collection,
+} from "../types";
 import { ProductForm } from "../components/ProductForm";
 import CategoryForm from "../components/CategoryForm";
 import CollectionForm from "../components/CollectionForm";
@@ -32,6 +37,34 @@ type AdminSection = "products" | "categories" | "collections";
 type FlashMessage = {
   type: "success" | "error";
   text: string;
+};
+
+type VariantFormState = {
+  id: string | null;
+  sku: string;
+  label: string;
+  karat: string;
+  width_mm: string;
+  profile: string;
+  closure_type: string;
+  price: string;
+  sort_order: string;
+  active: boolean;
+  metadata: string;
+};
+
+const EMPTY_VARIANT_FORM: VariantFormState = {
+  id: null,
+  sku: "",
+  label: "",
+  karat: "",
+  width_mm: "",
+  profile: "",
+  closure_type: "",
+  price: "",
+  sort_order: "0",
+  active: true,
+  metadata: "{}",
 };
 
 async function parseErrorMessage(response: Response, fallback: string) {
@@ -70,6 +103,14 @@ export const Admin: React.FC = () => {
   const [editingCollection, setEditingCollection] = useState<Collection | null>(
     null,
   );
+  const [productVariants, setProductVariants] = useState<
+    BackendProductVariant[]
+  >([]);
+  const [loadingVariants, setLoadingVariants] = useState(false);
+  const [savingVariant, setSavingVariant] = useState(false);
+  const [variantError, setVariantError] = useState<string | null>(null);
+  const [variantForm, setVariantForm] =
+    useState<VariantFormState>(EMPTY_VARIANT_FORM);
   const productFormRef = useRef<HTMLDivElement | null>(null);
   const categoryFormRef = useRef<HTMLDivElement | null>(null);
   const collectionFormRef = useRef<HTMLDivElement | null>(null);
@@ -119,6 +160,17 @@ export const Admin: React.FC = () => {
 
     return () => window.clearTimeout(timer);
   }, [editingProduct, section, showProductForm]);
+
+  useEffect(() => {
+    if (section !== "products" || !editingProduct) {
+      setProductVariants([]);
+      setVariantError(null);
+      setVariantForm(EMPTY_VARIANT_FORM);
+      return;
+    }
+
+    void fetchProductVariants(editingProduct.id);
+  }, [editingProduct, section]);
 
   useEffect(() => {
     if (section !== "categories") {
@@ -237,6 +289,221 @@ export const Admin: React.FC = () => {
     setEditingProduct(null);
     setEditingCategory(null);
     setEditingCollection(null);
+    setProductVariants([]);
+    setVariantError(null);
+    setVariantForm(EMPTY_VARIANT_FORM);
+  };
+
+  const fetchProductVariants = async (productId: string) => {
+    try {
+      setLoadingVariants(true);
+      setVariantError(null);
+
+      const response = await fetch(
+        `${API_BASE_URL}/api/products/${productId}/variants`,
+        {
+          headers: buildAuthHeaders(),
+        },
+      );
+
+      if (response.status === 401) {
+        clearAdminToken();
+        setIsAuthenticated(false);
+        setAuthError("Tu sesión expiró. Volvé a iniciar sesión.");
+        return;
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          await parseErrorMessage(response, "Error al cargar variantes"),
+        );
+      }
+
+      const data: BackendProductVariant[] = await response.json();
+      setProductVariants(data);
+    } catch (fetchError) {
+      setVariantError(
+        fetchError instanceof Error
+          ? fetchError.message
+          : "Error al cargar variantes",
+      );
+      setProductVariants([]);
+    } finally {
+      setLoadingVariants(false);
+    }
+  };
+
+  const startCreateVariant = () => {
+    setVariantError(null);
+    setVariantForm({
+      ...EMPTY_VARIANT_FORM,
+      price:
+        editingProduct && Number.isFinite(Number(editingProduct.price))
+          ? String(editingProduct.price)
+          : "",
+    });
+  };
+
+  const startEditVariant = (variant: BackendProductVariant) => {
+    setVariantError(null);
+    setVariantForm({
+      id: variant.id,
+      sku: variant.sku,
+      label: variant.label,
+      karat: variant.karat || "",
+      width_mm:
+        variant.width_mm === null || variant.width_mm === undefined
+          ? ""
+          : String(variant.width_mm),
+      profile: variant.profile || "",
+      closure_type: variant.closure_type || "",
+      price: String(variant.price),
+      sort_order: String(variant.sort_order ?? 0),
+      active: variant.active,
+      metadata: JSON.stringify(variant.metadata || {}, null, 2),
+    });
+  };
+
+  const handleVariantFieldChange = (
+    field: keyof VariantFormState,
+    value: string | boolean,
+  ) => {
+    setVariantForm((previous) => ({
+      ...previous,
+      [field]: value,
+    }));
+  };
+
+  const handleVariantSubmit = async (
+    event: React.FormEvent<HTMLFormElement>,
+  ) => {
+    event.preventDefault();
+
+    if (!editingProduct) {
+      return;
+    }
+
+    try {
+      setSavingVariant(true);
+      setVariantError(null);
+
+      let parsedMetadata: Record<string, unknown> = {};
+      if (variantForm.metadata.trim()) {
+        try {
+          parsedMetadata = JSON.parse(variantForm.metadata);
+        } catch {
+          throw new Error("Metadata debe ser un JSON válido");
+        }
+      }
+
+      const payload = {
+        sku: variantForm.sku,
+        label: variantForm.label,
+        karat: variantForm.karat || null,
+        width_mm: variantForm.width_mm.trim()
+          ? Number(variantForm.width_mm)
+          : null,
+        profile: variantForm.profile || null,
+        closure_type: variantForm.closure_type || null,
+        price: Number(variantForm.price),
+        sort_order: Number(variantForm.sort_order || 0),
+        active: variantForm.active,
+        metadata: parsedMetadata,
+      };
+
+      const isUpdate = Boolean(variantForm.id);
+      const endpoint = isUpdate
+        ? `${API_BASE_URL}/api/products/${editingProduct.id}/variants/${variantForm.id}`
+        : `${API_BASE_URL}/api/products/${editingProduct.id}/variants`;
+
+      const response = await fetch(endpoint, {
+        method: isUpdate ? "PUT" : "POST",
+        headers: buildAuthHeaders({ "Content-Type": "application/json" }),
+        body: JSON.stringify(payload),
+      });
+
+      if (response.status === 401) {
+        clearAdminToken();
+        setIsAuthenticated(false);
+        throw new Error("Tu sesión expiró. Volvé a iniciar sesión.");
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          await parseErrorMessage(
+            response,
+            isUpdate
+              ? "Error al actualizar variante"
+              : "Error al crear variante",
+          ),
+        );
+      }
+
+      setMessage({
+        type: "success",
+        text: isUpdate ? "Variante actualizada" : "Variante creada",
+      });
+      setVariantForm(EMPTY_VARIANT_FORM);
+      await Promise.all([
+        fetchProductVariants(editingProduct.id),
+        fetchProducts(),
+      ]);
+    } catch (submitError) {
+      setVariantError(
+        submitError instanceof Error
+          ? submitError.message
+          : "Error al guardar variante",
+      );
+    } finally {
+      setSavingVariant(false);
+    }
+  };
+
+  const handleDeleteVariant = async (variantId: string) => {
+    if (!editingProduct) {
+      return;
+    }
+
+    if (!confirm("¿Está seguro de que desea eliminar esta variante?")) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/products/${editingProduct.id}/variants/${variantId}`,
+        {
+          method: "DELETE",
+          headers: buildAuthHeaders(),
+        },
+      );
+
+      if (response.status === 401) {
+        clearAdminToken();
+        setIsAuthenticated(false);
+        throw new Error("Tu sesión expiró. Volvé a iniciar sesión.");
+      }
+
+      if (!response.ok) {
+        throw new Error(
+          await parseErrorMessage(response, "Error al eliminar variante"),
+        );
+      }
+
+      setMessage({ type: "success", text: "Variante eliminada" });
+      if (variantForm.id === variantId) {
+        setVariantForm(EMPTY_VARIANT_FORM);
+      }
+      await Promise.all([
+        fetchProductVariants(editingProduct.id),
+        fetchProducts(),
+      ]);
+    } catch (deleteError) {
+      setVariantError(
+        deleteError instanceof Error
+          ? deleteError.message
+          : "Error al eliminar variante",
+      );
+    }
   };
 
   const handleCreateProduct = async (data: Omit<BackendProduct, "id">) => {
@@ -653,6 +920,308 @@ export const Admin: React.FC = () => {
               }
               onCancel={resetForms}
             />
+          </div>
+        ) : null}
+
+        {section === "products" && editingProduct ? (
+          <div className="mb-10 border border-zinc-200 rounded-xl p-5 bg-zinc-50">
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+              <div>
+                <h2 className="text-lg font-semibold text-black">Variantes</h2>
+                <p className="text-sm text-zinc-600">
+                  Gestiona variantes para {editingProduct.name}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={startCreateVariant}
+                className="px-4 py-2 border border-black text-black rounded hover:bg-black/5 transition-colors text-xs font-medium uppercase"
+              >
+                + Nueva Variante
+              </button>
+            </div>
+
+            {variantError ? (
+              <div className="mb-4 px-4 py-3 rounded-lg border bg-red-50 border-red-200 text-red-700 text-sm">
+                {variantError}
+              </div>
+            ) : null}
+
+            {loadingVariants ? (
+              <p className="text-sm text-zinc-500 mb-4">
+                Cargando variantes...
+              </p>
+            ) : (
+              <div className="overflow-x-auto mb-4">
+                <table className="w-full border-collapse bg-white rounded-lg overflow-hidden">
+                  <thead>
+                    <tr className="border-b border-zinc-200">
+                      <th className="text-left py-2 px-3 text-xs uppercase tracking-[0.15em] text-zinc-600">
+                        SKU
+                      </th>
+                      <th className="text-left py-2 px-3 text-xs uppercase tracking-[0.15em] text-zinc-600">
+                        Etiqueta
+                      </th>
+                      <th className="text-left py-2 px-3 text-xs uppercase tracking-[0.15em] text-zinc-600">
+                        Kilataje
+                      </th>
+                      <th className="text-left py-2 px-3 text-xs uppercase tracking-[0.15em] text-zinc-600">
+                        Mm
+                      </th>
+                      <th className="text-left py-2 px-3 text-xs uppercase tracking-[0.15em] text-zinc-600">
+                        Precio
+                      </th>
+                      <th className="text-left py-2 px-3 text-xs uppercase tracking-[0.15em] text-zinc-600">
+                        Orden
+                      </th>
+                      <th className="text-left py-2 px-3 text-xs uppercase tracking-[0.15em] text-zinc-600">
+                        Estado
+                      </th>
+                      <th className="text-left py-2 px-3 text-xs uppercase tracking-[0.15em] text-zinc-600">
+                        Acciones
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {productVariants.length === 0 ? (
+                      <tr>
+                        <td
+                          colSpan={8}
+                          className="py-4 px-3 text-sm text-zinc-500"
+                        >
+                          Este producto todavía no tiene variantes.
+                        </td>
+                      </tr>
+                    ) : (
+                      productVariants.map((variant) => (
+                        <tr
+                          key={variant.id}
+                          className="border-b border-zinc-100"
+                        >
+                          <td className="py-2 px-3 font-mono text-xs text-zinc-700">
+                            {variant.sku}
+                          </td>
+                          <td className="py-2 px-3 text-sm text-black">
+                            {variant.label}
+                          </td>
+                          <td className="py-2 px-3 text-sm text-zinc-600">
+                            {variant.karat || "-"}
+                          </td>
+                          <td className="py-2 px-3 text-sm text-zinc-600">
+                            {variant.width_mm ?? "-"}
+                          </td>
+                          <td className="py-2 px-3 text-sm text-black font-medium">
+                            ${variant.price}
+                          </td>
+                          <td className="py-2 px-3 text-sm text-zinc-600">
+                            {variant.sort_order ?? 0}
+                          </td>
+                          <td className="py-2 px-3">
+                            <span
+                              className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${
+                                variant.active
+                                  ? "bg-green-100 text-green-700"
+                                  : "bg-zinc-100 text-zinc-600"
+                              }`}
+                            >
+                              {variant.active ? "Activa" : "Inactiva"}
+                            </span>
+                          </td>
+                          <td className="py-2 px-3">
+                            <div className="flex gap-2">
+                              <button
+                                type="button"
+                                onClick={() => startEditVariant(variant)}
+                                className="px-2 py-1 border border-black text-black rounded hover:bg-black/5 transition-colors text-[11px] font-medium uppercase"
+                              >
+                                Editar
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleDeleteVariant(variant.id)}
+                                className="px-2 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition-colors text-[11px] font-medium uppercase"
+                              >
+                                Eliminar
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <form
+              onSubmit={handleVariantSubmit}
+              className="grid gap-3 md:grid-cols-2"
+            >
+              <div>
+                <label className="block text-xs uppercase tracking-[0.15em] text-zinc-600 mb-1">
+                  SKU
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={variantForm.sku}
+                  onChange={(event) =>
+                    handleVariantFieldChange("sku", event.target.value)
+                  }
+                  className="w-full px-3 py-2 border border-zinc-300 rounded-md"
+                />
+              </div>
+              <div>
+                <label className="block text-xs uppercase tracking-[0.15em] text-zinc-600 mb-1">
+                  Etiqueta
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={variantForm.label}
+                  onChange={(event) =>
+                    handleVariantFieldChange("label", event.target.value)
+                  }
+                  className="w-full px-3 py-2 border border-zinc-300 rounded-md"
+                />
+              </div>
+              <div>
+                <label className="block text-xs uppercase tracking-[0.15em] text-zinc-600 mb-1">
+                  Kilataje
+                </label>
+                <input
+                  type="text"
+                  value={variantForm.karat}
+                  onChange={(event) =>
+                    handleVariantFieldChange("karat", event.target.value)
+                  }
+                  placeholder="10K / 18K"
+                  className="w-full px-3 py-2 border border-zinc-300 rounded-md"
+                />
+              </div>
+              <div>
+                <label className="block text-xs uppercase tracking-[0.15em] text-zinc-600 mb-1">
+                  Ancho (mm)
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  min="0"
+                  value={variantForm.width_mm}
+                  onChange={(event) =>
+                    handleVariantFieldChange("width_mm", event.target.value)
+                  }
+                  className="w-full px-3 py-2 border border-zinc-300 rounded-md"
+                />
+              </div>
+              <div>
+                <label className="block text-xs uppercase tracking-[0.15em] text-zinc-600 mb-1">
+                  Perfil
+                </label>
+                <input
+                  type="text"
+                  value={variantForm.profile}
+                  onChange={(event) =>
+                    handleVariantFieldChange("profile", event.target.value)
+                  }
+                  placeholder="bombe / doble_bombe"
+                  className="w-full px-3 py-2 border border-zinc-300 rounded-md"
+                />
+              </div>
+              <div>
+                <label className="block text-xs uppercase tracking-[0.15em] text-zinc-600 mb-1">
+                  Cierre
+                </label>
+                <input
+                  type="text"
+                  value={variantForm.closure_type}
+                  onChange={(event) =>
+                    handleVariantFieldChange("closure_type", event.target.value)
+                  }
+                  placeholder="rosca / pasante"
+                  className="w-full px-3 py-2 border border-zinc-300 rounded-md"
+                />
+              </div>
+              <div>
+                <label className="block text-xs uppercase tracking-[0.15em] text-zinc-600 mb-1">
+                  Precio
+                </label>
+                <input
+                  type="number"
+                  required
+                  step="0.01"
+                  min="0"
+                  value={variantForm.price}
+                  onChange={(event) =>
+                    handleVariantFieldChange("price", event.target.value)
+                  }
+                  className="w-full px-3 py-2 border border-zinc-300 rounded-md"
+                />
+              </div>
+              <div>
+                <label className="block text-xs uppercase tracking-[0.15em] text-zinc-600 mb-1">
+                  Orden
+                </label>
+                <input
+                  type="number"
+                  step="1"
+                  value={variantForm.sort_order}
+                  onChange={(event) =>
+                    handleVariantFieldChange("sort_order", event.target.value)
+                  }
+                  className="w-full px-3 py-2 border border-zinc-300 rounded-md"
+                />
+              </div>
+
+              <div className="md:col-span-2">
+                <label className="block text-xs uppercase tracking-[0.15em] text-zinc-600 mb-1">
+                  Metadata (JSON)
+                </label>
+                <textarea
+                  rows={4}
+                  value={variantForm.metadata}
+                  onChange={(event) =>
+                    handleVariantFieldChange("metadata", event.target.value)
+                  }
+                  className="w-full px-3 py-2 border border-zinc-300 rounded-md font-mono text-xs"
+                />
+              </div>
+
+              <div className="md:col-span-2 flex flex-wrap items-center justify-between gap-3">
+                <label className="inline-flex items-center gap-2 text-sm text-zinc-700">
+                  <input
+                    type="checkbox"
+                    checked={variantForm.active}
+                    onChange={(event) =>
+                      handleVariantFieldChange("active", event.target.checked)
+                    }
+                    className="h-4 w-4"
+                  />
+                  Variante activa
+                </label>
+
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setVariantForm(EMPTY_VARIANT_FORM)}
+                    className="px-4 py-2 border border-zinc-300 text-zinc-700 rounded hover:border-black hover:text-black transition-colors text-xs font-medium uppercase"
+                  >
+                    Limpiar
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={savingVariant}
+                    className="px-4 py-2 bg-black text-white rounded hover:bg-black/90 transition-colors text-xs font-medium uppercase disabled:opacity-60"
+                  >
+                    {savingVariant
+                      ? "Guardando..."
+                      : variantForm.id
+                        ? "Actualizar Variante"
+                        : "Crear Variante"}
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
         ) : null}
 
