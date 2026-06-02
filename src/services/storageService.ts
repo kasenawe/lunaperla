@@ -1,44 +1,63 @@
 import { BACKEND_URL } from "../constants";
 import { buildAuthHeaders, clearAdminToken } from "./adminAuthService";
 
-type UploadImageResponse = {
-  image_url?: string;
+type UploadTokenResponse = {
+  signed_url?: string;
+  path?: string;
+  public_url?: string;
   error?: string;
 };
 
 const API_BASE_URL = import.meta.env.DEV ? "" : BACKEND_URL;
 
+// El upload se hace en dos pasos para evitar el limite de payload de Vercel
+// (4.5 MB en funciones serverless):
+//   1. El backend genera una signed URL de Supabase Storage (request ~100 bytes).
+//   2. El frontend sube el binario directamente a Supabase usando esa URL.
+//      El archivo nunca pasa por la funcion serverless de Vercel.
 export async function uploadProductImage(file: File): Promise<string> {
   if (!file.type.startsWith("image/")) {
     throw new Error("Selecciona un archivo de imagen valido");
   }
 
-  const maxSizeBytes = 5 * 1024 * 1024;
-  if (file.size > maxSizeBytes) {
-    throw new Error("La imagen debe pesar menos de 5MB");
-  }
-
-  const formData = new FormData();
-  formData.append("image", file);
-
-  const response = await fetch(`${API_BASE_URL}/api/upload-image`, {
+  // Step 1: Request a signed upload URL from the backend.
+  const tokenResponse = await fetch(`${API_BASE_URL}/api/upload-image-token`, {
     method: "POST",
-    headers: buildAuthHeaders(),
-    body: formData,
+    headers: buildAuthHeaders({ "Content-Type": "application/json" }),
+    body: JSON.stringify({ filename: file.name, content_type: file.type }),
   });
 
-  if (response.status === 401) {
+  if (tokenResponse.status === 401) {
     clearAdminToken();
+    throw new Error("Tu sesion expiro. Volve a iniciar sesion.");
   }
 
-  const result = (await response.json()) as UploadImageResponse;
-  if (!response.ok) {
-    throw new Error(result.error || "Error al subir imagen");
+  const tokenData = (await tokenResponse.json()) as UploadTokenResponse;
+  if (!tokenResponse.ok) {
+    throw new Error(tokenData.error || "Error al obtener URL de subida");
   }
 
-  if (!result.image_url) {
-    throw new Error("No se recibio la ruta de imagen desde el backend");
+  if (!tokenData.signed_url || !tokenData.path) {
+    throw new Error("Respuesta invalida del servidor al generar URL de subida");
   }
 
-  return result.image_url;
+  // Step 2: PUT the binary directly to Supabase Storage (bypasses Vercel).
+  const uploadResponse = await fetch(tokenData.signed_url, {
+    method: "PUT",
+    headers: { "Content-Type": file.type },
+    body: file,
+  });
+
+  if (!uploadResponse.ok) {
+    let detail = "";
+    try {
+      const errorBody = (await uploadResponse.json()) as { message?: string };
+      detail = errorBody.message ? `: ${errorBody.message}` : "";
+    } catch {
+      // ignore parse error
+    }
+    throw new Error(`Error al subir imagen a Supabase${detail}`);
+  }
+
+  return tokenData.path;
 }
