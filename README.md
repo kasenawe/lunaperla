@@ -20,7 +20,7 @@ E-commerce de joyeria infantil para Uruguay, construido con React + TypeScript +
 - Productos dinámicos desde backend (base de datos Supabase).
 - Categorias y colecciones opcionales sincronizadas con backend y fallback local.
 - Imágenes en Supabase Storage con rutas persistidas en la base y URLs públicas normalizadas en frontend.
-- Subida de imágenes desde el panel admin a través del backend.
+- Subida de imágenes con token firmado: backend genera `signed_url` y el archivo se sube directo a Supabase Storage.
 - Fallback a productos estáticos en caso de error de conexión.
 
 ## Stack
@@ -114,7 +114,7 @@ Implementadas en [src/App.tsx](src/App.tsx) y paginas en [src/pages](src/pages).
 - [src/pages/Admin.tsx](src/pages/Admin.tsx): panel de administración por pestañas para productos, categorias y colecciones, incluyendo gestion de variantes por producto.
 - [src/services/productService.ts](src/services/productService.ts): servicio de fetch de productos con normalización de URLs y fallback.
 - [src/services/catalogService.ts](src/services/catalogService.ts): servicio de CRUD para categorias y colecciones.
-- [src/services/storageService.ts](src/services/storageService.ts): subida de imágenes al backend usando `multipart/form-data`.
+- [src/services/storageService.ts](src/services/storageService.ts): subida de imágenes en dos pasos (`/api/upload-image-token` + `PUT` directo a Supabase Storage).
 - [src/utils/imageUrl.ts](src/utils/imageUrl.ts): helper compartido para convertir paths almacenados en URLs públicas renderizables.
 - [src/components/ProductGrid.tsx](src/components/ProductGrid.tsx): recibe productos, titulo y subtitulo para renderizar cada categoria del catalogo.
 - [src/components/ProductForm.tsx](src/components/ProductForm.tsx): formulario reutilizable para el CRUD del admin, con categoria, coleccion opcional y campo `Codigo de producto` (`product_code`).
@@ -159,7 +159,8 @@ En este frontend:
 
 Notas:
 
-- El frontend ya no sube imágenes directamente a Supabase; esa operación se hace en backend con service role.
+- El frontend sube imágenes directamente a Supabase Storage usando una signed upload URL emitida por backend.
+- El backend no recibe el binario de la imagen, solo firma la subida usando `SUPABASE_SERVICE_ROLE_KEY`.
 - `image_url` se guarda en base como path del objeto en Storage, no como URL pública completa.
 - Si el backend o las tablas de catalogo no están disponibles, el frontend usa fallback local de productos y categorias definido en [src/constants.ts](src/constants.ts).
 - Para `/admin`, necesitás iniciar sesión con credenciales configuradas en backend (`ADMIN_USERNAME` y `ADMIN_PASSWORD`).
@@ -212,7 +213,7 @@ Este frontend espera un backend Node/Express en una carpeta hermana (`../lunaper
 - `POST /api/products/:id/variants`
 - `PUT /api/products/:id/variants/:variantId`
 - `DELETE /api/products/:id/variants/:variantId`
-- `POST /api/upload-image`
+- `POST /api/upload-image-token`
 - `POST /api/auth/login`
 - `POST /api/create-payment`
 - `POST /api/webhook`

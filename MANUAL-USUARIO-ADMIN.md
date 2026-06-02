@@ -187,6 +187,13 @@ Para un manejo profesional:
 - Verificar que se guardo correctamente en admin.
 - Verificar conectividad con backend.
 
+### 9.4 Error al subir imagen de producto
+
+- Si aparece un error de subida, revisar primero formato y tamaño del archivo.
+- El panel usa subida directa a Supabase Storage con URL firmada.
+- Reintentar con una imagen optimizada (menos peso y resolucion razonable).
+- Si persiste, revisar variables de backend: SUPABASE_SERVICE_ROLE_KEY y SUPABASE_STORAGE_BUCKET.
+
 ## 10. Checklist rapido diario
 
 1. Revisar productos nuevos o modificados.
