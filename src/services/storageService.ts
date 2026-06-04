@@ -1,4 +1,4 @@
-import { BACKEND_URL } from "../constants";
+import { getApiBaseUrl } from "../config/api";
 import { buildAuthHeaders, clearAdminToken } from "./adminAuthService";
 
 type UploadTokenResponse = {
@@ -8,7 +8,7 @@ type UploadTokenResponse = {
   error?: string;
 };
 
-const API_BASE_URL = import.meta.env.DEV ? "" : BACKEND_URL;
+const API_BASE_URL = getApiBaseUrl();
 
 // El upload se hace en dos pasos para evitar el limite de payload de Vercel
 // (4.5 MB en funciones serverless):

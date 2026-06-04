@@ -1,8 +1,9 @@
-import { BACKEND_URL, DEFAULT_CATEGORIES } from "../constants";
+import { DEFAULT_CATEGORIES } from "../constants";
+import { getApiBaseUrl } from "../config/api";
 import { Category, Collection } from "../types";
 import { buildAuthHeaders, clearAdminToken } from "./adminAuthService";
 
-const API_BASE_URL = import.meta.env.DEV ? "" : BACKEND_URL;
+const API_BASE_URL = getApiBaseUrl();
 
 type ApiErrorResponse = {
   error?: string;

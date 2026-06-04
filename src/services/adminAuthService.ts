@@ -1,6 +1,6 @@
-import { BACKEND_URL } from "../constants";
+import { getApiBaseUrl } from "../config/api";
 
-const API_BASE_URL = import.meta.env.DEV ? "" : BACKEND_URL;
+const API_BASE_URL = getApiBaseUrl();
 const ADMIN_TOKEN_KEY = "lunaperla_admin_token";
 
 type LoginResponse = {

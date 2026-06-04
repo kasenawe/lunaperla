@@ -1,8 +1,9 @@
 import { CatalogProduct, ProductVariant } from "../types";
-import { BACKEND_URL, PRODUCTS } from "../constants";
+import { PRODUCTS } from "../constants";
+import { getApiBaseUrl } from "../config/api";
 import { normalizeImageUrl } from "../utils/imageUrl";
 
-const API_BASE_URL = import.meta.env.DEV ? "" : BACKEND_URL;
+const API_BASE_URL = getApiBaseUrl();
 
 type ProductApiItem = {
   id?: string;
@@ -52,7 +53,12 @@ function normalizeCategoryName(name?: string, slug?: string) {
 
 function normalizeVariant(item: ProductVariantApiItem): ProductVariant | null {
   const normalizedPrice = Number(item.price);
-  if (!item.id || !item.product_id || !item.sku || Number.isNaN(normalizedPrice)) {
+  if (
+    !item.id ||
+    !item.product_id ||
+    !item.sku ||
+    Number.isNaN(normalizedPrice)
+  ) {
     return null;
   }
 
@@ -116,7 +122,9 @@ export async function getProducts(): Promise<CatalogProduct[]> {
       mappedProducts.push(mappedProduct);
     }
 
-    return (mappedProducts.length > 0 ? mappedProducts : PRODUCTS) as CatalogProduct[];
+    return (
+      mappedProducts.length > 0 ? mappedProducts : PRODUCTS
+    ) as CatalogProduct[];
   } catch {
     return PRODUCTS;
   }

@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { BACKEND_URL } from "../constants";
+import { getApiBaseUrl } from "../config/api";
 import {
   BackendProduct,
   BackendProductVariant,
@@ -30,7 +30,7 @@ import {
   loginAdmin,
 } from "../services/adminAuthService";
 
-const API_BASE_URL = import.meta.env.DEV ? "" : BACKEND_URL;
+const API_BASE_URL = getApiBaseUrl();
 
 type AdminSection = "products" | "categories" | "collections";
 

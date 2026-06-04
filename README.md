@@ -123,7 +123,8 @@ Implementadas en [src/App.tsx](src/App.tsx) y paginas en [src/pages](src/pages).
 - [src/components/PurchaseModal.tsx](src/components/PurchaseModal.tsx): concentra la lógica de checkout y seleccion de variantes para precio/codigo.
 - [src/components/Navbar.tsx](src/components/Navbar.tsx): navegación superior con accesos a categorias activas.
 - [src/components/Footer.tsx](src/components/Footer.tsx): footer reutilizable para páginas internas.
-- [src/constants.ts](src/constants.ts): productos, categorias y colecciones de fallback, FAQ, logos, WhatsApp y URLs de backend.
+- [src/constants.ts](src/constants.ts): productos, categorias y colecciones de fallback, FAQ, logos y WhatsApp.
+- [src/config/api.ts](src/config/api.ts): resolución centralizada de base URL para API según entorno (`VITE_API_BASE_URL`, proxy local de Vite y fallback de producción).
 - [src/types.ts](src/types.ts): tipos compartidos (`CatalogProduct`, `ProductVariant`, `BackendProduct`, `BackendProductVariant`, `Category`, `Collection`, `FAQItem`, `PaymentMethod`).
 
 ## Estructura del Proyecto
@@ -154,6 +155,7 @@ lunaperla/
 En este frontend:
 
 - `.env.local`
+  - `VITE_API_BASE_URL`: base URL del backend para entornos no locales (staging/prod). En local puede quedar vacía para usar el proxy de Vite (`/api` -> `http://localhost:3001`).
   - `GEMINI_API_KEY` (si usas la integración de AI Studio/Gemini)
   - `VITE_SUPABASE_STORAGE_PUBLIC_BASE_URL`: URL pública del bucket de productos en Supabase Storage (ejemplo: `https://PROJECT_REF.supabase.co/storage/v1/object/public/products`)
 
@@ -165,7 +167,7 @@ Notas:
 - Si el backend o las tablas de catalogo no están disponibles, el frontend usa fallback local de productos y categorias definido en [src/constants.ts](src/constants.ts).
 - Para `/admin`, necesitás iniciar sesión con credenciales configuradas en backend (`ADMIN_USERNAME` y `ADMIN_PASSWORD`).
 
-Nota: la URL de backend para pagos está definida en [src/constants.ts](src/constants.ts) como `BACKEND_URL` (producción) y `BACKEND_URL_LOCAL` (desarrollo).
+Nota: la base URL de backend se resuelve en [src/config/api.ts](src/config/api.ts) usando `VITE_API_BASE_URL`; en local usa el proxy de Vite hacia `http://localhost:3001`.
 
 ## Scripts
 

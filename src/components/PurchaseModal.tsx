@@ -2,7 +2,10 @@ import { useState, FormEvent } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, ArrowRight, CreditCard, Landmark, Banknote } from "lucide-react";
 import { CatalogProduct, PaymentMethod } from "../types";
-import { BACKEND_URL, WHATSAPP_NUMBER } from "../constants";
+import { WHATSAPP_NUMBER } from "../constants";
+import { getApiBaseUrl } from "../config/api";
+
+const API_BASE_URL = getApiBaseUrl();
 
 interface PurchaseModalProps {
   product: CatalogProduct | null;
@@ -25,13 +28,16 @@ export default function PurchaseModal({
 
   if (!product) return null;
 
-  const activeVariants = (product.variants || []).filter((variant) => variant.active);
+  const activeVariants = (product.variants || []).filter(
+    (variant) => variant.active,
+  );
   const selectedVariant =
     activeVariants.find((variant) => variant.id === selectedVariantId) ||
     activeVariants[0] ||
     null;
   const displayPrice = selectedVariant?.price ?? product.price;
-  const selectedProductCode = selectedVariant?.sku || product.productCode || null;
+  const selectedProductCode =
+    selectedVariant?.sku || product.productCode || null;
 
   const handleMethodSelect = (selectedMethod: PaymentMethod) => {
     setMethod(selectedMethod);
@@ -60,7 +66,7 @@ export default function PurchaseModal({
     if (method === "mercadopago") {
       // Procesar pago con Mercado Pago
       try {
-        const response = await fetch(BACKEND_URL + "/api/create-payment", {
+        const response = await fetch(`${API_BASE_URL}/api/create-payment`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -176,7 +182,9 @@ export default function PurchaseModal({
                     </label>
                     <select
                       value={selectedVariantId || activeVariants[0]?.id || ""}
-                      onChange={(event) => setSelectedVariantId(event.target.value)}
+                      onChange={(event) =>
+                        setSelectedVariantId(event.target.value)
+                      }
                       className="w-full border border-zinc-200 px-4 py-3 bg-white"
                     >
                       {activeVariants.map((variant) => (
@@ -187,12 +195,19 @@ export default function PurchaseModal({
                     </select>
 
                     <div className="mt-3 text-sm text-zinc-500 space-y-1">
-                      {selectedVariant?.karat ? <p>Kilates: {selectedVariant.karat}</p> : null}
-                      {selectedVariant?.widthMm !== null && selectedVariant?.widthMm !== undefined ? (
+                      {selectedVariant?.karat ? (
+                        <p>Kilates: {selectedVariant.karat}</p>
+                      ) : null}
+                      {selectedVariant?.widthMm !== null &&
+                      selectedVariant?.widthMm !== undefined ? (
                         <p>Ancho: {selectedVariant.widthMm} mm</p>
                       ) : null}
-                      {selectedVariant?.profile ? <p>Perfil: {selectedVariant.profile}</p> : null}
-                      {selectedVariant?.closureType ? <p>Cierre: {selectedVariant.closureType}</p> : null}
+                      {selectedVariant?.profile ? (
+                        <p>Perfil: {selectedVariant.profile}</p>
+                      ) : null}
+                      {selectedVariant?.closureType ? (
+                        <p>Cierre: {selectedVariant.closureType}</p>
+                      ) : null}
                     </div>
                   </div>
                 ) : null}
