@@ -81,7 +81,7 @@ export const Admin: React.FC = () => {
   const [authLoading, setAuthLoading] = useState(true);
   const [authError, setAuthError] = useState<string | null>(null);
   const [credentials, setCredentials] = useState({
-    username: "",
+    email: "",
     password: "",
   });
   const [section, setSection] = useState<AdminSection>("products");
@@ -603,7 +603,7 @@ export const Admin: React.FC = () => {
     try {
       setAuthError(null);
       await loginAdmin(credentials);
-      setCredentials({ username: "", password: "" });
+      setCredentials({ email: "", password: "" });
       setIsAuthenticated(true);
     } catch (loginError) {
       setAuthError(
@@ -655,16 +655,16 @@ export const Admin: React.FC = () => {
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-zinc-700 mb-1">
-                  Usuario
+                  Email
                 </label>
                 <input
-                  type="text"
+                  type="email"
                   required
-                  value={credentials.username}
+                  value={credentials.email}
                   onChange={(event) =>
                     setCredentials((prev) => ({
                       ...prev,
-                      username: event.target.value,
+                      email: event.target.value,
                     }))
                   }
                   className="w-full px-3 py-2 border border-zinc-300 rounded-md focus:outline-none focus:ring-2 focus:ring-black/50"

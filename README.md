@@ -57,6 +57,7 @@ E-commerce de joyeria infantil para Uruguay, construido con React + TypeScript +
 - Ruta dedicada: `/admin` en [src/App.tsx](src/App.tsx).
 - Página de administración en [src/pages/Admin.tsx](src/pages/Admin.tsx).
 - Login en navegador para admin (JWT) con persistencia de sesión en `localStorage`.
+- Login en navegador para admin con email + contraseña, persistiendo el JWT en `localStorage`.
 - Envío automático de `Authorization: Bearer <token>` en operaciones protegidas.
 - CRUD completo de productos:
   - listado con `GET /api/products?all=true`
@@ -165,7 +166,7 @@ Notas:
 - El backend no recibe el binario de la imagen, solo firma la subida usando `SUPABASE_SERVICE_ROLE_KEY`.
 - `image_url` se guarda en base como path del objeto en Storage, no como URL pública completa.
 - Si el backend o las tablas de catalogo no están disponibles, el frontend usa fallback local de productos y categorias definido en [src/constants.ts](src/constants.ts).
-- Para `/admin`, necesitás iniciar sesión con credenciales configuradas en backend (`ADMIN_USERNAME` y `ADMIN_PASSWORD`).
+- Para `/admin`, necesitás iniciar sesión con un usuario admin persistido en la base de datos.
 
 Nota: la base URL de backend se resuelve en [src/config/api.ts](src/config/api.ts) usando `VITE_API_BASE_URL`; en local usa el proxy de Vite hacia `http://localhost:3001`.
 
@@ -216,7 +217,10 @@ Este frontend espera un backend Node/Express en una carpeta hermana (`../lunaper
 - `PUT /api/products/:id/variants/:variantId`
 - `DELETE /api/products/:id/variants/:variantId`
 - `POST /api/upload-image-token`
+- `POST /api/auth/register`
 - `POST /api/auth/login`
+- `GET /api/auth/me`
+- `PUT /api/auth/profile`
 - `POST /api/create-payment`
 - `POST /api/webhook`
 - `GET /api/health`

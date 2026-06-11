@@ -59,8 +59,8 @@ Configurar en el proyecto backend:
 - `SUPABASE_STORAGE_BUCKET`
 - `JWT_SECRET`
 - `JWT_EXPIRES_IN`
-- `ADMIN_USERNAME`
-- `ADMIN_PASSWORD`
+- `INITIAL_ADMIN_EMAIL` (opcional, solo bootstrap del primer admin)
+- `INITIAL_ADMIN_PASSWORD` (opcional, solo bootstrap del primer admin)
 - `RESEND_API_KEY` (opcional)
 
 Referencia: ../lunaperla-backend/.env.staging.example

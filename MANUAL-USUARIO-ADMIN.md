@@ -5,12 +5,13 @@ Este manual esta pensado para la operacion diaria del panel administrativo de Lu
 ## 1. Acceso al panel
 
 1. Entrar a la ruta /admin en el sitio.
-2. Ingresar usuario y contraseña de administrador.
+2. Ingresar email y contraseña del usuario administrador.
 3. Si la sesion expira, volver a iniciar sesion.
 
 Nota:
 
-- Las credenciales se configuran en backend (ADMIN_USERNAME y ADMIN_PASSWORD).
+- El acceso depende de un usuario admin guardado en la tabla `users`.
+- El primer admin puede crearse con el bootstrap inicial del backend o cargarse manualmente en Supabase.
 
 ## 2. Estructura del panel
 

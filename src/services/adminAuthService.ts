@@ -9,7 +9,7 @@ type LoginResponse = {
 };
 
 type LoginPayload = {
-  username: string;
+  email: string;
   password: string;
 };
 
