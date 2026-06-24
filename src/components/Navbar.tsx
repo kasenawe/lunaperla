@@ -31,6 +31,12 @@ export default function Navbar({ categories = [] }: NavbarProps) {
         <a href={catalogHref} className="hover:opacity-70 transition-opacity">
           Catalogo
         </a>
+        <a
+          href="/account/addresses"
+          className="hover:opacity-70 transition-opacity"
+        >
+          Mi cuenta
+        </a>
         {categories.slice(0, 4).map((category) => (
           <a
             key={category.slug}

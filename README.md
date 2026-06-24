@@ -11,6 +11,7 @@ E-commerce de joyeria infantil para Uruguay, construido con React + TypeScript +
 - Frontend con rutas completas para checkout: inicio, pago exitoso, pago fallido y pago pendiente.
 - Home con catalogo dinamico por categorias, filtros y secciones generadas desde datos reales.
 - Panel administrativo en `/admin` para gestionar productos, categorias y colecciones.
+- Área de cliente en `/account/addresses` para gestionar direcciones guardadas.
 - Panel administrativo con campo `Codigo de producto` en alta/edición y listado.
 - Panel administrativo con gestion de variantes por producto (SKU, etiqueta, kilataje, mm, perfil, cierre, precio, orden, estado y metadata JSON).
 - Flujo de compra con modal y formulario de datos del cliente.
@@ -103,6 +104,7 @@ E-commerce de joyeria infantil para Uruguay, construido con React + TypeScript +
 
 - `/` Home: landing, catalogo, FAQ y modal de compra.
 - `/admin` panel de administración de catalogo.
+- `/account/addresses` gestión de direcciones del cliente autenticado.
 - `/success` confirmacion de pago exitoso.
 - `/failure` pantalla de pago fallido con acceso a soporte.
 - `/pending` pantalla de pago pendiente con seguimiento.
@@ -221,6 +223,11 @@ Este frontend espera un backend Node/Express en una carpeta hermana (`../lunaper
 - `POST /api/auth/login`
 - `GET /api/auth/me`
 - `PUT /api/auth/profile`
+- `GET /api/addresses`
+- `POST /api/addresses`
+- `PUT /api/addresses/:id`
+- `PUT /api/addresses/:id/default`
+- `DELETE /api/addresses/:id`
 - `POST /api/create-payment`
 - `POST /api/webhook`
 - `GET /api/health`

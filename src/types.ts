@@ -80,3 +80,33 @@ export interface FAQItem {
 }
 
 export type PaymentMethod = "mercadopago" | "transfer" | "cash";
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  first_name: string | null;
+  last_name: string | null;
+  phone: string | null;
+  role: "admin" | "customer";
+  active: boolean;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface Address {
+  id: string;
+  user_id: string;
+  label: string | null;
+  recipient_name: string;
+  phone: string;
+  street: string;
+  number: string;
+  apartment: string | null;
+  city: string;
+  state: string | null;
+  postal_code: string | null;
+  country: string;
+  is_default: boolean;
+  created_at: string;
+  updated_at: string;
+}

@@ -4,6 +4,7 @@ import Failure from "./pages/Failure";
 import Pending from "./pages/Pending";
 import Home from "./pages/Home";
 import Admin from "./pages/Admin";
+import AccountAddresses from "./pages/AccountAddresses";
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/failure" element={<Failure />} />
         <Route path="/pending" element={<Pending />} />
         <Route path="/admin" element={<Admin />} />
+        <Route path="/account/addresses" element={<AccountAddresses />} />
       </Routes>
     </BrowserRouter>
   );

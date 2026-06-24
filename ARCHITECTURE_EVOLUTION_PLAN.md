@@ -233,6 +233,12 @@ Criterios de aceptación:
 - Usuario autenticado administra solo sus direcciones.
 - Una sola dirección default por usuario.
 
+Estado de implementación actual:
+
+- backend con CRUD autenticado de `/api/addresses`
+- frontend con ruta `/account/addresses`
+- checkout aún no consume direcciones guardadas en esta fase
+
 Riesgos:
 
 - Acceso cruzado de direcciones por mala validación de ownership.
