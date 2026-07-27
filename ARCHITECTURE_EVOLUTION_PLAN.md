@@ -20,10 +20,10 @@ Principios:
 
 ## 2. Baseline de `staging`
 
-Baseline utilizado para retomar el proyecto:
+Baseline cerrado de Fase 2:
 
-- Frontend: `8e9aca3` (`feat(checkout): use saved addresses in purchase flow`).
-- Backend: `d625999` (`feat(checkout): include shipping address in payment payload`).
+- Frontend: `7e92f9e` (merge del hardening previo a Fase 3).
+- Backend: `fcff6f9` (merge del hardening previo a Fase 3).
 - `staging` tiene despliegue de Vercel y Supabase independientes.
 - Producción todavía no está en uso.
 
@@ -32,15 +32,16 @@ Estado funcional confirmado por inspección del repositorio:
 | Fase | Estado | Evidencia principal |
 | --- | --- | --- |
 | 1. Usuarios reales | Implementada en código | `users`, bcrypt, JWT y roles |
-| 2. Direcciones | Código y Supabase validados; deploy Vercel pendiente | CRUD, ownership y dirección predeterminada |
-| 3. Carrito persistente | No iniciada | No existen `carts`, `cart_items` ni `/api/cart` |
+| 2. Direcciones | Cerrada | CRUD, ownership, dirección predeterminada y smoke manual aprobados |
+| 3. Carrito persistente | Implementada en rama | Migración y smoke backend aprobados; pendiente PR y smoke visual |
 | 4–6 | No iniciadas | No existen órdenes v2, historial ni stock |
 | 7. Checkout evolucionado | Adelanto parcial y desactivado | Selector de dirección sin persistencia en órdenes |
 | 8–12 | No iniciadas formalmente | Mejoras futuras |
 
 Estado formal actual:
 
-> Cierre y validación de Fase 2. La siguiente fase autorizable es Fase 3.
+> Fase 2 cerrada. Fase 3 implementada en rama y pendiente de revisión y smoke
+> visual en un despliegue con las flags activas.
 
 ## 3. Trabajo adelantado del checkout
 
@@ -101,7 +102,7 @@ Criterios de cierre:
 
 ### Fase 2 — Direcciones de cliente
 
-Estado: implementada en código; pendiente de cierre operativo.
+Estado: cerrada y validada en staging.
 
 Incluye:
 
@@ -122,7 +123,9 @@ Criterios de cierre:
 
 ### Fase 3 — Carrito persistente
 
-Estado: no iniciada.
+Estado: implementada en `codex/phase3-persistent-cart`. La migración y el smoke
+del backend fueron aprobados en Supabase staging; quedan pendientes el PR, el
+despliegue con flags activas y el smoke visual.
 
 Decisiones aprobadas:
 
@@ -245,7 +248,8 @@ Estado: adelanto parcial desactivado.
 Flags actuales o previstas:
 
 - `VITE_CHECKOUT_SAVED_ADDRESSES_ENABLED`
-- `CART_PERSISTENT_ENABLED`
+- `CART_PERSISTENT_ENABLED` en backend
+- `VITE_CART_PERSISTENT_ENABLED` en frontend
 - `ORDERS_V2_ENABLED`
 - `INVENTORY_STOCK_ENABLED`
 
@@ -284,5 +288,5 @@ Una fase se considera cerrada solo cuando:
 
 ## 10. Próximo paso
 
-Completar el checklist de cierre de Fase 2. Una vez aprobado, comenzar
-exclusivamente la Fase 3 — Carrito persistente.
+Publicar los PR de Fase 3, activar las flags en sus despliegues de staging y
+completar el smoke visual de escritorio/móvil antes de cerrar la fase.

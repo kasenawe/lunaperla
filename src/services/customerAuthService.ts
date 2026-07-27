@@ -3,6 +3,8 @@ import { AuthUser } from "../types";
 
 const API_BASE_URL = getApiBaseUrl();
 const CUSTOMER_TOKEN_KEY = "lunaperla_customer_token";
+export const CUSTOMER_AUTH_CHANGED_EVENT =
+  "lunaperla:customer-auth-changed";
 
 type AuthResponse = {
   accessToken?: string;
@@ -36,6 +38,14 @@ function hasWindow() {
   return typeof window !== "undefined";
 }
 
+function notifyCustomerAuthChanged() {
+  if (!hasWindow()) {
+    return;
+  }
+
+  window.dispatchEvent(new Event(CUSTOMER_AUTH_CHANGED_EVENT));
+}
+
 export function getCustomerToken() {
   if (!hasWindow()) {
     return null;
@@ -50,6 +60,7 @@ export function setCustomerToken(token: string) {
   }
 
   window.localStorage.setItem(CUSTOMER_TOKEN_KEY, token);
+  notifyCustomerAuthChanged();
 }
 
 export function clearCustomerToken() {
@@ -58,6 +69,7 @@ export function clearCustomerToken() {
   }
 
   window.localStorage.removeItem(CUSTOMER_TOKEN_KEY);
+  notifyCustomerAuthChanged();
 }
 
 export function isCustomerAuthenticated() {

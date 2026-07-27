@@ -110,3 +110,22 @@ export interface Address {
   created_at: string;
   updated_at: string;
 }
+
+export interface CartItem {
+  id: string;
+  productId: string;
+  variantId: string | null;
+  quantity: number;
+  product: CatalogProduct;
+  variant: ProductVariant | null;
+  unitPrice: number;
+  lineTotal: number;
+  available: boolean;
+}
+
+export interface Cart {
+  id: string | null;
+  items: CartItem[];
+  totalQuantity: number;
+  subtotal: number;
+}
