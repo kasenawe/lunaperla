@@ -9,8 +9,9 @@ E-commerce de joyeria infantil para Uruguay, construido con React + TypeScript +
 ## Estado del plan de arquitectura
 
 - Fase 1 (usuarios reales): implementada.
-- Fase 2 (direcciones): implementada y validada contra Supabase staging.
-- Fase 3 (carrito persistente): no iniciada.
+- Fase 2 (direcciones): cerrada y validada en staging.
+- Fase 3 (carrito persistente): implementada en rama, pendiente de migración y
+  smoke en staging.
 - La selección adelantada de direcciones en checkout permanece desactivada
   mediante feature flag hasta completar la evolución de órdenes y checkout.
 
@@ -23,6 +24,10 @@ Ver [ARCHITECTURE_EVOLUTION_PLAN.md](ARCHITECTURE_EVOLUTION_PLAN.md) y
 - Home con catalogo dinamico por categorias, filtros y secciones generadas desde datos reales.
 - Panel administrativo en `/admin` para gestionar productos, categorias y colecciones.
 - Área de cliente en `/account/addresses` para gestionar direcciones guardadas.
+- Carrito guest persistente en `localStorage` y carrito autenticado persistente
+  en Supabase, sin fusión automática al iniciar sesión.
+- Página `/cart`, badge de cantidad y acciones para agregar, modificar y
+  eliminar artículos.
 - Panel administrativo con campo `Codigo de producto` en alta/edición y listado.
 - Panel administrativo con gestion de variantes por producto (SKU, etiqueta, kilataje, mm, perfil, cierre, precio, orden, estado y metadata JSON).
 - Flujo de compra con modal y formulario de datos del cliente.
@@ -116,6 +121,7 @@ Ver [ARCHITECTURE_EVOLUTION_PLAN.md](ARCHITECTURE_EVOLUTION_PLAN.md) y
 - `/` Home: landing, catalogo, FAQ y modal de compra.
 - `/admin` panel de administración de catalogo.
 - `/account/addresses` gestión de direcciones del cliente autenticado.
+- `/cart` carrito persistente guest o autenticado.
 - `/success` confirmacion de pago exitoso.
 - `/failure` pantalla de pago fallido con acceso a soporte.
 - `/pending` pantalla de pago pendiente con seguimiento.
@@ -129,6 +135,12 @@ Implementadas en [src/App.tsx](src/App.tsx) y paginas en [src/pages](src/pages).
 - [src/services/productService.ts](src/services/productService.ts): servicio de fetch de productos con normalización de URLs y fallback.
 - [src/services/catalogService.ts](src/services/catalogService.ts): servicio de CRUD para categorias y colecciones.
 - [src/services/storageService.ts](src/services/storageService.ts): subida de imágenes en dos pasos (`/api/upload-image-token` + `PUT` directo a Supabase Storage).
+- [src/services/cartService.ts](src/services/cartService.ts): adaptador del
+  carrito autenticado hacia `/api/cart`.
+- [src/cart/guestCart.ts](src/cart/guestCart.ts): persistencia y reglas del
+  carrito guest en `localStorage`.
+- [src/cart/CartContext.tsx](src/cart/CartContext.tsx): selecciona el adaptador
+  local o API según la sesión, sin fusionar carritos.
 - [src/utils/imageUrl.ts](src/utils/imageUrl.ts): helper compartido para convertir paths almacenados en URLs públicas renderizables.
 - [src/components/ProductGrid.tsx](src/components/ProductGrid.tsx): recibe productos, titulo y subtitulo para renderizar cada categoria del catalogo.
 - [src/components/ProductForm.tsx](src/components/ProductForm.tsx): formulario reutilizable para el CRUD del admin, con categoria, coleccion opcional y campo `Codigo de producto` (`product_code`).
@@ -173,6 +185,8 @@ En este frontend:
   - `VITE_CHECKOUT_SAVED_ADDRESSES_ENABLED`: habilita el adelanto de
     direcciones guardadas en checkout. Debe permanecer en `false` hasta cerrar
     las Fases 4 y 7.
+  - `VITE_CART_PERSISTENT_ENABLED`: habilita la UI de carrito de Fase 3. Su
+    valor por defecto es `false` y se activa primero en staging.
   - `GEMINI_API_KEY` (si usas la integración de AI Studio/Gemini)
   - `VITE_SUPABASE_STORAGE_PUBLIC_BASE_URL`: URL pública del bucket de productos en Supabase Storage (ejemplo: `https://PROJECT_REF.supabase.co/storage/v1/object/public/products`)
 
@@ -196,6 +210,7 @@ Desde este proyecto:
 - `npm run build`: build de producción y validación de bundling.
 - `npm run preview`: vista previa del build.
 - `npm run lint`: chequeo de TypeScript (`tsc --noEmit`).
+- `npm test`: pruebas unitarias del carrito guest.
 
 ## Flujo de Pago End-to-End
 
@@ -242,6 +257,10 @@ Este frontend espera un backend Node/Express en una carpeta hermana (`../lunaper
 - `PUT /api/addresses/:id`
 - `PUT /api/addresses/:id/default`
 - `DELETE /api/addresses/:id`
+- `GET /api/cart`
+- `POST /api/cart/items`
+- `PUT /api/cart/items/:id`
+- `DELETE /api/cart/items/:id`
 - `POST /api/create-payment`
 - `POST /api/webhook`
 - `GET /api/health`
