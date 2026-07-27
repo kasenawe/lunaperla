@@ -4,6 +4,7 @@ import { X, ArrowRight, CreditCard, Landmark, Banknote } from "lucide-react";
 import { CatalogProduct, PaymentMethod, Address } from "../types";
 import { WHATSAPP_NUMBER } from "../constants";
 import { getApiBaseUrl } from "../config/api";
+import { features } from "../config/features";
 import { getAddresses } from "../services/addressService";
 import { isCustomerAuthenticated } from "../services/customerAuthService";
 
@@ -46,7 +47,11 @@ export default function PurchaseModal({
   };
 
   useEffect(() => {
-    if (!product || !isCustomerAuthenticated()) {
+    if (
+      !features.checkoutSavedAddresses ||
+      !product ||
+      !isCustomerAuthenticated()
+    ) {
       return;
     }
 
@@ -180,7 +185,8 @@ export default function PurchaseModal({
               email: formData.email,
               address: formData.address || undefined,
             },
-            shippingAddress: selectedAddress
+            shippingAddress:
+              features.checkoutSavedAddresses && selectedAddress
               ? {
                   label: selectedAddress.label,
                   recipient_name: selectedAddress.recipient_name,
@@ -429,7 +435,8 @@ export default function PurchaseModal({
                       />
                     </div>
                   )}
-                  {savedAddresses.length > 0 && (
+                  {features.checkoutSavedAddresses &&
+                    savedAddresses.length > 0 && (
                     <div>
                       <label className="block text-xs uppercase tracking-widest text-zinc-500 mb-2">
                         Dirección Guardada
@@ -467,7 +474,9 @@ export default function PurchaseModal({
                       />
                     </div>
                   )}
-                  {method === "mercadopago" && formData.address && (
+                  {features.checkoutSavedAddresses &&
+                    method === "mercadopago" &&
+                    formData.address && (
                     <p className="text-xs text-zinc-500">
                       Se enviará la dirección seleccionada junto con el pago.
                     </p>
