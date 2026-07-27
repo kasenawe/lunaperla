@@ -2,7 +2,8 @@
 
 Fecha de apertura: 2026-07-27
 Entorno: `staging` independiente
-Estado: validación local y Supabase aprobada; deploy Vercel pendiente
+Estado: validación local y Supabase aprobada; deploy preview validado
+parcialmente, con bloqueo de integración detectado
 
 ## Baseline
 
@@ -45,22 +46,34 @@ Resultado: `npm run smoke:phase2:staging` aprobado el 2026-07-27.
 
 ## Smoke tests del deploy Vercel
 
-- [ ] `GET /api/health`.
-- [ ] Catálogo público y variantes.
+- [x] `GET /api/health` en el preview de la rama backend.
+- [x] Catálogo público y variantes.
 - [ ] Login admin.
 - [ ] CRUD de producto de prueba.
 - [ ] Registro/login customer.
 - [ ] CRUD de direcciones desde `/account/addresses`.
 - [ ] Checkout guest con Mercado Pago TEST.
 - [ ] Pedido por WhatsApp.
-- [ ] Rutas success, failure y pending.
+- [x] Rutas success, failure y pending.
 
-GitHub registra deployments exitosos del baseline en los proyectos Vercel
-`lunaperla-stg` y `lunaperla-backend-stg`. Sin embargo, los aliases escritos
-anteriormente en `.env.staging.example` devuelven `DEPLOYMENT_NOT_FOUND` y los
-links de detalle requieren iniciar sesión en Vercel. Se requiere el alias
-efectivo de frontend y backend o acceso al proyecto de Vercel para completar
-esta sección.
+Previews validados el 2026-07-27:
+
+- Frontend:
+  `https://lunaperla-stg-git-codex-pre-phase3-hardening-kasenawes-projects.vercel.app`
+- Backend:
+  `https://lunaperla-backend-stg-git-codex-pre-p-1c330b-kasenawes-projects.vercel.app`
+
+El preview backend responde correctamente en `/api/health`, `/api/products`,
+`/api/categories` y `/api/collections`. El frontend carga el catálogo, abre el
+checkout guest sin direcciones guardadas y renderiza las tres rutas de retorno
+de pago.
+
+Bloqueo detectado: el frontend de preview usa
+`https://lunaperla-backend-stg.vercel.app`, que todavía corresponde al backend
+anterior. En ese deploy, incluso `/api/health` responde `401` con
+`Token requerido`, y el registro customer falla por la misma causa. El backend
+de esta rama corrige el orden de las rutas, pero debe promoverse a `staging`
+antes de repetir registro/login y CRUD de direcciones desde la interfaz.
 
 ## Compatibilidad y seguridad
 
