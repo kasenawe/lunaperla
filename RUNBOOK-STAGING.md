@@ -87,7 +87,13 @@ Referencia: ../lunaperla-backend/.env.staging.example
 2. Crear bucket `products` en STG.
 3. Ejecutar migraciones SQL de backend en STG:
    - `supabase-setup.sql`
+   - `supabase-phase1-users.sql`
+   - `supabase-phase2-addresses.sql`
 4. Cargar `supabase-seed.sql` si corresponde.
+5. Ejecutar `npm run validate:phase2:staging` desde backend.
+6. Para el smoke con datos temporales, definir
+   `CONFIRM_STAGING_MUTATIONS=true` y ejecutar
+   `npm run smoke:phase2:staging`.
 
 ## 7. Smoke test obligatorio de staging
 
@@ -101,6 +107,13 @@ Ejecutar antes de promover a main:
 6. Subida de imagen con signed URL y render correcto.
 7. Checkout Mercado Pago en modo test.
 8. Webhook actualiza estado de orden correctamente.
+9. Registro/login customer y ruta `/api/auth/me`.
+10. CRUD de direcciones y control de ownership.
+11. Verificar que `?all=true` solo incluye inactivos con JWT admin.
+12. Confirmar que `VITE_CHECKOUT_SAVED_ADDRESSES_ENABLED=false`.
+
+Los resultados de Fases 1–2 se registran en
+[docs/PHASE_2_VALIDATION.md](docs/PHASE_2_VALIDATION.md).
 
 ## 8. Criterios de promocion a produccion
 

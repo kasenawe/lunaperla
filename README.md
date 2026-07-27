@@ -6,6 +6,17 @@
 
 E-commerce de joyeria infantil para Uruguay, construido con React + TypeScript + Vite + Tailwind CSS.
 
+## Estado del plan de arquitectura
+
+- Fase 1 (usuarios reales): implementada.
+- Fase 2 (direcciones): implementada y validada contra Supabase staging.
+- Fase 3 (carrito persistente): no iniciada.
+- La selección adelantada de direcciones en checkout permanece desactivada
+  mediante feature flag hasta completar la evolución de órdenes y checkout.
+
+Ver [ARCHITECTURE_EVOLUTION_PLAN.md](ARCHITECTURE_EVOLUTION_PLAN.md) y
+[docs/PHASE_2_VALIDATION.md](docs/PHASE_2_VALIDATION.md).
+
 ## Estado Actual
 
 - Frontend con rutas completas para checkout: inicio, pago exitoso, pago fallido y pago pendiente.
@@ -159,6 +170,9 @@ En este frontend:
 
 - `.env.local`
   - `VITE_API_BASE_URL`: base URL del backend para entornos no locales (staging/prod). En local puede quedar vacía para usar el proxy de Vite (`/api` -> `http://localhost:3001`).
+  - `VITE_CHECKOUT_SAVED_ADDRESSES_ENABLED`: habilita el adelanto de
+    direcciones guardadas en checkout. Debe permanecer en `false` hasta cerrar
+    las Fases 4 y 7.
   - `GEMINI_API_KEY` (si usas la integración de AI Studio/Gemini)
   - `VITE_SUPABASE_STORAGE_PUBLIC_BASE_URL`: URL pública del bucket de productos en Supabase Storage (ejemplo: `https://PROJECT_REF.supabase.co/storage/v1/object/public/products`)
 
@@ -179,7 +193,7 @@ Desde este proyecto:
 - `npm run dev`: levanta frontend en puerto 3000 (si esta ocupado, Vite usa otro).
 - `npm run dev:backend`: ejecuta backend en carpeta hermana `../lunaperla-backend`.
 - `npm run dev:full`: corre frontend + backend en paralelo.
-- `npm run build`: build de produccion.
+- `npm run build`: build de producción y validación de bundling.
 - `npm run preview`: vista previa del build.
 - `npm run lint`: chequeo de TypeScript (`tsc --noEmit`).
 
