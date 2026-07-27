@@ -55,10 +55,12 @@ Resultado: `npm run smoke:phase2:staging` aprobado el 2026-07-27.
 - [ ] Pedido por WhatsApp.
 - [ ] Rutas success, failure y pending.
 
-Bloqueo actual: los aliases escritos anteriormente en `.env.staging.example`
-devuelven `DEPLOYMENT_NOT_FOUND` y no hay un URL real registrado en el
-repositorio. Se requiere el alias efectivo de frontend y backend o acceso al
-proyecto de Vercel para completar esta sección.
+GitHub registra deployments exitosos del baseline en los proyectos Vercel
+`lunaperla-stg` y `lunaperla-backend-stg`. Sin embargo, los aliases escritos
+anteriormente en `.env.staging.example` devuelven `DEPLOYMENT_NOT_FOUND` y los
+links de detalle requieren iniciar sesión en Vercel. Se requiere el alias
+efectivo de frontend y backend o acceso al proyecto de Vercel para completar
+esta sección.
 
 ## Compatibilidad y seguridad
 

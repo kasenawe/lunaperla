@@ -69,17 +69,18 @@ Referencia: ../lunaperla-backend/.env.staging.example
 
 ### Frontend
 
-1. Asociar deploy de `main` a Production.
+1. Usar el proyecto Vercel `lunaperla-stg` para staging.
 2. Asociar deploy de `staging` a Preview (o un proyecto dedicado staging).
 3. Cargar variables de staging para Preview.
-4. Cargar variables de produccion para Production.
+4. Registrar el alias público efectivo; no asumirlo desde el nombre del
+   proyecto.
 
 ### Backend
 
-1. Asociar deploy de `main` a Production.
+1. Usar el proyecto Vercel `lunaperla-backend-stg` para staging.
 2. Asociar deploy de `staging` a Preview (o proyecto dedicado staging).
 3. Cargar variables de staging para Preview.
-4. Cargar variables de produccion para Production.
+4. Registrar el alias público efectivo.
 
 ## 6. Supabase staging
 
