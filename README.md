@@ -6,11 +6,28 @@
 
 E-commerce de joyeria infantil para Uruguay, construido con React + TypeScript + Vite + Tailwind CSS.
 
+## Estado del plan de arquitectura
+
+- Fase 1 (usuarios reales): implementada.
+- Fase 2 (direcciones): cerrada y validada en staging.
+- Fase 3 (carrito persistente): implementada en rama, pendiente de migración y
+  smoke en staging.
+- La selección adelantada de direcciones en checkout permanece desactivada
+  mediante feature flag hasta completar la evolución de órdenes y checkout.
+
+Ver [ARCHITECTURE_EVOLUTION_PLAN.md](ARCHITECTURE_EVOLUTION_PLAN.md) y
+[docs/PHASE_2_VALIDATION.md](docs/PHASE_2_VALIDATION.md).
+
 ## Estado Actual
 
 - Frontend con rutas completas para checkout: inicio, pago exitoso, pago fallido y pago pendiente.
 - Home con catalogo dinamico por categorias, filtros y secciones generadas desde datos reales.
 - Panel administrativo en `/admin` para gestionar productos, categorias y colecciones.
+- Área de cliente en `/account/addresses` para gestionar direcciones guardadas.
+- Carrito guest persistente en `localStorage` y carrito autenticado persistente
+  en Supabase, sin fusión automática al iniciar sesión.
+- Página `/cart`, badge de cantidad y acciones para agregar, modificar y
+  eliminar artículos.
 - Panel administrativo con campo `Codigo de producto` en alta/edición y listado.
 - Panel administrativo con gestion de variantes por producto (SKU, etiqueta, kilataje, mm, perfil, cierre, precio, orden, estado y metadata JSON).
 - Flujo de compra con modal y formulario de datos del cliente.
@@ -57,6 +74,7 @@ E-commerce de joyeria infantil para Uruguay, construido con React + TypeScript +
 - Ruta dedicada: `/admin` en [src/App.tsx](src/App.tsx).
 - Página de administración en [src/pages/Admin.tsx](src/pages/Admin.tsx).
 - Login en navegador para admin (JWT) con persistencia de sesión en `localStorage`.
+- Login en navegador para admin con email + contraseña, persistiendo el JWT en `localStorage`.
 - Envío automático de `Authorization: Bearer <token>` en operaciones protegidas.
 - CRUD completo de productos:
   - listado con `GET /api/products?all=true`
@@ -102,6 +120,8 @@ E-commerce de joyeria infantil para Uruguay, construido con React + TypeScript +
 
 - `/` Home: landing, catalogo, FAQ y modal de compra.
 - `/admin` panel de administración de catalogo.
+- `/account/addresses` gestión de direcciones del cliente autenticado.
+- `/cart` carrito persistente guest o autenticado.
 - `/success` confirmacion de pago exitoso.
 - `/failure` pantalla de pago fallido con acceso a soporte.
 - `/pending` pantalla de pago pendiente con seguimiento.
@@ -115,6 +135,12 @@ Implementadas en [src/App.tsx](src/App.tsx) y paginas en [src/pages](src/pages).
 - [src/services/productService.ts](src/services/productService.ts): servicio de fetch de productos con normalización de URLs y fallback.
 - [src/services/catalogService.ts](src/services/catalogService.ts): servicio de CRUD para categorias y colecciones.
 - [src/services/storageService.ts](src/services/storageService.ts): subida de imágenes en dos pasos (`/api/upload-image-token` + `PUT` directo a Supabase Storage).
+- [src/services/cartService.ts](src/services/cartService.ts): adaptador del
+  carrito autenticado hacia `/api/cart`.
+- [src/cart/guestCart.ts](src/cart/guestCart.ts): persistencia y reglas del
+  carrito guest en `localStorage`.
+- [src/cart/CartContext.tsx](src/cart/CartContext.tsx): selecciona el adaptador
+  local o API según la sesión, sin fusionar carritos.
 - [src/utils/imageUrl.ts](src/utils/imageUrl.ts): helper compartido para convertir paths almacenados en URLs públicas renderizables.
 - [src/components/ProductGrid.tsx](src/components/ProductGrid.tsx): recibe productos, titulo y subtitulo para renderizar cada categoria del catalogo.
 - [src/components/ProductForm.tsx](src/components/ProductForm.tsx): formulario reutilizable para el CRUD del admin, con categoria, coleccion opcional y campo `Codigo de producto` (`product_code`).
@@ -156,6 +182,11 @@ En este frontend:
 
 - `.env.local`
   - `VITE_API_BASE_URL`: base URL del backend para entornos no locales (staging/prod). En local puede quedar vacía para usar el proxy de Vite (`/api` -> `http://localhost:3001`).
+  - `VITE_CHECKOUT_SAVED_ADDRESSES_ENABLED`: habilita el adelanto de
+    direcciones guardadas en checkout. Debe permanecer en `false` hasta cerrar
+    las Fases 4 y 7.
+  - `VITE_CART_PERSISTENT_ENABLED`: habilita la UI de carrito de Fase 3. Su
+    valor por defecto es `false` y se activa primero en staging.
   - `GEMINI_API_KEY` (si usas la integración de AI Studio/Gemini)
   - `VITE_SUPABASE_STORAGE_PUBLIC_BASE_URL`: URL pública del bucket de productos en Supabase Storage (ejemplo: `https://PROJECT_REF.supabase.co/storage/v1/object/public/products`)
 
@@ -165,7 +196,7 @@ Notas:
 - El backend no recibe el binario de la imagen, solo firma la subida usando `SUPABASE_SERVICE_ROLE_KEY`.
 - `image_url` se guarda en base como path del objeto en Storage, no como URL pública completa.
 - Si el backend o las tablas de catalogo no están disponibles, el frontend usa fallback local de productos y categorias definido en [src/constants.ts](src/constants.ts).
-- Para `/admin`, necesitás iniciar sesión con credenciales configuradas en backend (`ADMIN_USERNAME` y `ADMIN_PASSWORD`).
+- Para `/admin`, necesitás iniciar sesión con un usuario admin persistido en la base de datos.
 
 Nota: la base URL de backend se resuelve en [src/config/api.ts](src/config/api.ts) usando `VITE_API_BASE_URL`; en local usa el proxy de Vite hacia `http://localhost:3001`.
 
@@ -176,9 +207,10 @@ Desde este proyecto:
 - `npm run dev`: levanta frontend en puerto 3000 (si esta ocupado, Vite usa otro).
 - `npm run dev:backend`: ejecuta backend en carpeta hermana `../lunaperla-backend`.
 - `npm run dev:full`: corre frontend + backend en paralelo.
-- `npm run build`: build de produccion.
+- `npm run build`: build de producción y validación de bundling.
 - `npm run preview`: vista previa del build.
 - `npm run lint`: chequeo de TypeScript (`tsc --noEmit`).
+- `npm test`: pruebas unitarias del carrito guest.
 
 ## Flujo de Pago End-to-End
 
@@ -216,7 +248,19 @@ Este frontend espera un backend Node/Express en una carpeta hermana (`../lunaper
 - `PUT /api/products/:id/variants/:variantId`
 - `DELETE /api/products/:id/variants/:variantId`
 - `POST /api/upload-image-token`
+- `POST /api/auth/register`
 - `POST /api/auth/login`
+- `GET /api/auth/me`
+- `PUT /api/auth/profile`
+- `GET /api/addresses`
+- `POST /api/addresses`
+- `PUT /api/addresses/:id`
+- `PUT /api/addresses/:id/default`
+- `DELETE /api/addresses/:id`
+- `GET /api/cart`
+- `POST /api/cart/items`
+- `PUT /api/cart/items/:id`
+- `DELETE /api/cart/items/:id`
 - `POST /api/create-payment`
 - `POST /api/webhook`
 - `GET /api/health`

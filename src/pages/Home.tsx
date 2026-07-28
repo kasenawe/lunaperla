@@ -7,10 +7,11 @@ import PaymentMethods from "../components/PaymentMethods";
 import FAQ from "../components/FAQ";
 import WhatsAppButton from "../components/WhatsAppButton";
 import PurchaseModal from "../components/PurchaseModal";
-import { Category, CatalogProduct } from "../types";
+import { Category, CatalogProduct, ProductVariant } from "../types";
 import { LOGO_URL, LOGO_SIMPLE_URL } from "../constants";
 import { getCategories } from "../services/catalogService";
 import { getProducts } from "../services/productService";
+import { useCart } from "../cart/CartContext";
 
 export default function Home() {
   const [selectedProduct, setSelectedProduct] = useState<CatalogProduct | null>(null);
@@ -19,6 +20,11 @@ export default function Home() {
   const [activeCategorySlug, setActiveCategorySlug] = useState("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [cartNotice, setCartNotice] = useState<{
+    type: "success" | "error";
+    text: string;
+  } | null>(null);
+  const { enabled: cartEnabled, addItem } = useCart();
 
   useEffect(() => {
     Promise.all([getProducts(), getCategories()])
@@ -33,8 +39,36 @@ export default function Home() {
       });
   }, []);
 
+  useEffect(() => {
+    if (!cartNotice) return;
+
+    const timer = window.setTimeout(() => setCartNotice(null), 3000);
+    return () => window.clearTimeout(timer);
+  }, [cartNotice]);
+
   const handleBuy = (product: CatalogProduct) => {
     setSelectedProduct(product);
+  };
+
+  const handleAddToCart = async (
+    product: CatalogProduct,
+    variant: ProductVariant | null,
+  ) => {
+    try {
+      await addItem(product, variant, 1);
+      setCartNotice({
+        type: "success",
+        text: `${product.name} fue agregado al carrito`,
+      });
+    } catch (cartError) {
+      setCartNotice({
+        type: "error",
+        text:
+          cartError instanceof Error
+            ? cartError.message
+            : "No se pudo agregar el producto",
+      });
+    }
   };
 
   const categoriesWithProducts = categories.filter((category) =>
@@ -51,6 +85,18 @@ export default function Home() {
   return (
     <main className="min-h-screen selection:bg-gold/30">
       <Navbar categories={categoriesWithProducts} />
+      {cartNotice ? (
+        <div
+          role="status"
+          className={`fixed right-4 top-24 z-[70] max-w-sm rounded-xl border px-5 py-4 text-sm shadow-xl ${
+            cartNotice.type === "success"
+              ? "border-emerald-200 bg-emerald-50 text-emerald-900"
+              : "border-red-200 bg-red-50 text-red-800"
+          }`}
+        >
+          {cartNotice.text}
+        </div>
+      ) : null}
       {/* Hero Section */}
       <Hero />
 
@@ -123,6 +169,7 @@ export default function Home() {
                 (product) => product.categorySlug === category.slug,
               )}
               onBuy={handleBuy}
+              onAddToCart={cartEnabled ? handleAddToCart : undefined}
             />
           ))}
         </>

@@ -1,9 +1,12 @@
-import { useState, FormEvent } from "react";
+import { useEffect, useState, FormEvent } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { X, ArrowRight, CreditCard, Landmark, Banknote } from "lucide-react";
-import { CatalogProduct, PaymentMethod } from "../types";
+import { CatalogProduct, PaymentMethod, Address } from "../types";
 import { WHATSAPP_NUMBER } from "../constants";
 import { getApiBaseUrl } from "../config/api";
+import { features } from "../config/features";
+import { getAddresses } from "../services/addressService";
+import { isCustomerAuthenticated } from "../services/customerAuthService";
 
 const API_BASE_URL = getApiBaseUrl();
 
@@ -19,12 +22,77 @@ export default function PurchaseModal({
   const [step, setStep] = useState<"options" | "form">("options");
   const [method, setMethod] = useState<PaymentMethod | null>(null);
   const [selectedVariantId, setSelectedVariantId] = useState<string>("");
+  const [savedAddresses, setSavedAddresses] = useState<Address[]>([]);
+  const [selectedAddressId, setSelectedAddressId] = useState<string>("");
+  const [isLoadingAddresses, setIsLoadingAddresses] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
     email: "",
     address: "",
   });
+
+  const formatAddress = (address: Address) => {
+    return [
+      address.street,
+      address.number,
+      address.apartment,
+      address.city,
+      address.state,
+      address.postal_code,
+      address.country,
+    ]
+      .filter(Boolean)
+      .join(", ");
+  };
+
+  useEffect(() => {
+    if (
+      !features.checkoutSavedAddresses ||
+      !product ||
+      !isCustomerAuthenticated()
+    ) {
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadAddresses = async () => {
+      setIsLoadingAddresses(true);
+
+      try {
+        const addresses = await getAddresses();
+
+        if (!isMounted) return;
+
+        setSavedAddresses(addresses || []);
+
+        if (addresses?.length) {
+          const defaultAddress =
+            addresses.find((address) => address.is_default) || addresses[0];
+          setSelectedAddressId(defaultAddress.id);
+          setFormData((current) => ({
+            ...current,
+            name: current.name || defaultAddress.recipient_name || "",
+            phone: current.phone || defaultAddress.phone || "",
+            address: current.address || formatAddress(defaultAddress),
+          }));
+        }
+      } catch (error) {
+        console.error("No se pudieron cargar las direcciones guardadas:", error);
+      } finally {
+        if (isMounted) {
+          setIsLoadingAddresses(false);
+        }
+      }
+    };
+
+    loadAddresses();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [product]);
 
   if (!product) return null;
 
@@ -45,6 +113,23 @@ export default function PurchaseModal({
     setStep("form"); // Siempre ir al formulario primero para recopilar datos
   };
 
+  const handleAddressSelection = (addressId: string) => {
+    setSelectedAddressId(addressId);
+
+    const selectedAddress = savedAddresses.find((address) => address.id === addressId);
+
+    if (!selectedAddress) {
+      return;
+    }
+
+    setFormData((current) => ({
+      ...current,
+      name: selectedAddress.recipient_name || current.name,
+      phone: selectedAddress.phone || current.phone,
+      address: formatAddress(selectedAddress),
+    }));
+  };
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
@@ -62,6 +147,10 @@ export default function PurchaseModal({
       alert("Por favor complete la dirección de envío");
       return;
     }
+
+    const selectedAddress = savedAddresses.find(
+      (address) => address.id === selectedAddressId,
+    );
 
     if (method === "mercadopago") {
       // Procesar pago con Mercado Pago
@@ -94,7 +183,23 @@ export default function PurchaseModal({
               name: formData.name,
               phone: formData.phone,
               email: formData.email,
+              address: formData.address || undefined,
             },
+            shippingAddress:
+              features.checkoutSavedAddresses && selectedAddress
+              ? {
+                  label: selectedAddress.label,
+                  recipient_name: selectedAddress.recipient_name,
+                  phone: selectedAddress.phone,
+                  street: selectedAddress.street,
+                  number: selectedAddress.number,
+                  apartment: selectedAddress.apartment,
+                  city: selectedAddress.city,
+                  state: selectedAddress.state,
+                  postal_code: selectedAddress.postal_code,
+                  country: selectedAddress.country,
+                }
+              : null,
           }),
         });
 
@@ -330,6 +435,28 @@ export default function PurchaseModal({
                       />
                     </div>
                   )}
+                  {features.checkoutSavedAddresses &&
+                    savedAddresses.length > 0 && (
+                    <div>
+                      <label className="block text-xs uppercase tracking-widest text-zinc-500 mb-2">
+                        Dirección Guardada
+                      </label>
+                      <select
+                        value={selectedAddressId}
+                        onChange={(e) => handleAddressSelection(e.target.value)}
+                        className="w-full border border-zinc-200 px-4 py-3 bg-white"
+                        disabled={isLoadingAddresses}
+                      >
+                        <option value="">Seleccionar una dirección guardada</option>
+                        {savedAddresses.map((address) => (
+                          <option key={address.id} value={address.id}>
+                            {address.label || address.recipient_name} — {address.city}
+                            {address.is_default ? " • Predeterminada" : ""}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                   {method !== "mercadopago" && (
                     <div>
                       <label className="block text-xs uppercase tracking-widest text-zinc-500 mb-2">
@@ -346,6 +473,13 @@ export default function PurchaseModal({
                         placeholder="Calle, Número, Apto / Ciudad"
                       />
                     </div>
+                  )}
+                  {features.checkoutSavedAddresses &&
+                    method === "mercadopago" &&
+                    formData.address && (
+                    <p className="text-xs text-zinc-500">
+                      Se enviará la dirección seleccionada junto con el pago.
+                    </p>
                   )}
                 </div>
 
