@@ -1,6 +1,6 @@
 # Plan de Evolución de Arquitectura — Luna Gold Creaciones
 
-Última actualización: 2026-07-27
+Última actualización: 2026-07-28
 Documento canónico para frontend y backend.
 
 ## 1. Objetivo
@@ -20,28 +20,36 @@ Principios:
 
 ## 2. Baseline de `staging`
 
-Baseline cerrado de Fase 2:
+Baseline cerrado de Fase 3:
 
-- Frontend: `7e92f9e` (merge del hardening previo a Fase 3).
-- Backend: `fcff6f9` (merge del hardening previo a Fase 3).
+- Frontend `staging`: `f29f558` (merge de Fase 3).
+- Backend `staging`: `6517125` (Fase 3 más migraciones productivas
+  versionadas de Fases 1 y 2).
 - `staging` tiene despliegue de Vercel y Supabase independientes.
-- Producción todavía no está en uso.
+- El código validado de Fases 1–3 se promovió a `main`.
+- Producción todavía no tiene uso comercial.
+- En Supabase producción solo están aplicadas las migraciones
+  `202607270100_phase1_users.sql` y
+  `202607270200_phase2_addresses.sql`.
+- La migración `202607270300_phase3_persistent_cart.sql` no está aplicada en
+  producción.
 
 Estado funcional confirmado por inspección del repositorio:
 
 | Fase | Estado | Evidencia principal |
 | --- | --- | --- |
-| 1. Usuarios reales | Implementada en código | `users`, bcrypt, JWT y roles |
-| 2. Direcciones | Cerrada | CRUD, ownership, dirección predeterminada y smoke manual aprobados |
-| 3. Carrito persistente | Implementada en rama | Migración y smoke backend aprobados; pendiente PR y smoke visual |
+| 1. Usuarios reales | Cerrada | `users`, bcrypt, JWT, roles y baseline productivo verificado |
+| 2. Direcciones | Cerrada | CRUD, ownership, dirección predeterminada y baseline productivo verificado |
+| 3. Carrito persistente | Cerrada en staging, deshabilitada en producción | Tests automatizados, smoke técnico y smoke visual aprobados en staging |
 | 4–6 | No iniciadas | No existen órdenes v2, historial ni stock |
 | 7. Checkout evolucionado | Adelanto parcial y desactivado | Selector de dirección sin persistencia en órdenes |
 | 8–12 | No iniciadas formalmente | Mejoras futuras |
 
 Estado formal actual:
 
-> Fase 2 cerrada. Fase 3 implementada en rama y pendiente de revisión y smoke
-> visual en un despliegue con las flags activas.
+> Fases 1, 2 y 3 cerradas y validadas en staging. El código se promovió a
+> producción, pero el carrito persistente permanece deshabilitado y sin su
+> migración productiva. La Fase 4 no está iniciada.
 
 ## 3. Trabajo adelantado del checkout
 
@@ -84,7 +92,7 @@ Hasta completar las Fases 4 y 7:
 
 ### Fase 1 — Sistema de usuarios reales
 
-Estado: implementada en código.
+Estado: cerrada y promovida a `main`.
 
 Incluye:
 
@@ -102,7 +110,7 @@ Criterios de cierre:
 
 ### Fase 2 — Direcciones de cliente
 
-Estado: cerrada y validada en staging.
+Estado: cerrada, validada en staging y promovida a `main`.
 
 Incluye:
 
@@ -123,9 +131,11 @@ Criterios de cierre:
 
 ### Fase 3 — Carrito persistente
 
-Estado: implementada en `codex/phase3-persistent-cart`. La migración y el smoke
-del backend fueron aprobados en Supabase staging; quedan pendientes el PR, el
-despliegue con flags activas y el smoke visual.
+Estado: cerrada y validada en staging. El código está promovido a `main`, pero
+en producción permanece deshabilitada: no se aplicó
+`202607270300_phase3_persistent_cart.sql` y las flags
+`CART_PERSISTENT_ENABLED` y `VITE_CART_PERSISTENT_ENABLED` están ausentes o en
+`false`.
 
 Decisiones aprobadas:
 
@@ -286,7 +296,17 @@ Una fase se considera cerrada solo cuando:
 - Rollback documentado.
 - No quedan dependencias ocultas de fases posteriores.
 
-## 10. Próximo paso
+## 10. Pausa y próximo paso
 
-Publicar los PR de Fase 3, activar las flags en sus despliegues de staging y
-completar el smoke visual de escritorio/móvil antes de cerrar la fase.
+Luna Perla queda pausado en este baseline limpio para priorizar PSICOAPOYO. No
+iniciar la Fase 4 durante la pausa.
+
+Al retomar, la siguiente operación es la activación productiva controlada de la
+Fase 3:
+
+1. Confirmar nuevamente backups, variables y conectividad.
+2. Aplicar `202607270300_phase3_persistent_cart.sql` en Supabase producción.
+3. Validar esquema, RLS, ownership y ausencia de cambios en datos existentes.
+4. Habilitar primero `CART_PERSISTENT_ENABLED` y después
+   `VITE_CART_PERSISTENT_ENABLED`.
+5. Ejecutar smoke productivo completo y documentar el rollback.
